@@ -426,7 +426,7 @@ object RdoPdfGenerator {
             currentY += prodRowH
         }
 
-        // TOTAL EXECUTADO Row
+        /* TOTAL EXECUTADO Row
         val totalRowH = 14f
         canvas1.drawRect(MARGIN_LEFT, currentY, MARGIN_RIGHT, currentY + totalRowH, subheaderFillPaint)
         canvas1.drawLine(MARGIN_LEFT, currentY + totalRowH, MARGIN_RIGHT, currentY + totalRowH, linePaint)
@@ -436,6 +436,25 @@ object RdoPdfGenerator {
         val totalStr = String.format(Locale.US, "%.2f M²", grandTotalM2)
         canvas1.drawText(totalStr, MARGIN_RIGHT - 10f, currentY + 10f, textBold)
         currentY += totalRowH
+        */
+
+        // TOTAL EXECUTADO Row
+val totalRowH = 14f
+canvas1.drawRect(MARGIN_LEFT, currentY, MARGIN_RIGHT, currentY + totalRowH, subheaderFillPaint)
+canvas1.drawLine(MARGIN_LEFT, currentY + totalRowH, MARGIN_RIGHT, currentY + totalRowH, linePaint)
+
+val textTotalPaint = Paint(textBold).apply { textAlign = Paint.Align.RIGHT }
+val labelTotal = if (allProdItems.size > 7) "TOTAL GERAL CONSOLIDADO: " else "TOTAL EXECUTADO: "
+val totalStr = String.format(Locale.US, "%.2f M²", grandTotalM2)
+
+// 1. Desenha o valor numérico na extremidade direita
+canvas1.drawText(totalStr, MARGIN_RIGHT - 10f, currentY + 10f, textTotalPaint)
+
+// 2. Calcula a largura do valor numérico para posicionar o rótulo logo antes dele (com 15f de espaço)
+val totalStrWidth = textTotalPaint.measureText(totalStr)
+canvas1.drawText(labelTotal, MARGIN_RIGHT - 10f - totalStrWidth - 15f, currentY + 10f, textTotalPaint)
+
+currentY += totalRowH
 
         // 8. BANNER: RECURSOS
         canvas1.drawRect(MARGIN_LEFT, currentY, MARGIN_RIGHT, currentY + bannerH, subheaderFillPaint)
