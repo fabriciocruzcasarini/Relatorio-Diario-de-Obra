@@ -1,0 +1,8 @@
+{
+  "name": "Relatório Diário de Obra",
+  "description": "Controle e emissão de Relatório Diário de Obra (RDO) de Sinalização Horizontal com exportação em PDF e envio via WhatsApp.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

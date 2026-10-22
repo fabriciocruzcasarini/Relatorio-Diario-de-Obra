@@ -1,0 +1,6 @@
+{
+  "summary":  "Plano de Correções de QA e Melhorias de Usabilidade para o Relatório Diário de Obra (RDO), contemplando suporte a decimais com vírgula (padrão brasileiro), validação de campos obrigatórios com feedback visual, seletor visual de data (DatePicker), paginação dinâmica de anexo no PDF para obras extensas e sincronização do nome do app.",
+  "updatedAt":  "2026-10-21T17:19:17.886950782Z",
+  "requestFeedback":  true,
+  "userFacing":  true
+}
