@@ -316,15 +316,25 @@ object RdoPdfGenerator {
 
         canvas1.drawText("TIPO:", MARGIN_LEFT + 265f, currentY + 9f, textBold)
 
+        /* Aletração e Ajuste da posição nal linha
         drawCheckbox(canvas1, MARGIN_LEFT + 400f, currentY + 2f, report.metodoLaminado, linePaint)
         canvas1.drawText("LAMINADO", MARGIN_LEFT + 410f, currentY + 9f, textSmall)
-
         drawCheckbox(canvas1, MARGIN_LEFT + 460f, currentY + 2f, report.remocaoFresca || report.remocaoFogo, linePaint)
         canvas1.drawText("REMOÇÃO", MARGIN_LEFT + 470f, currentY + 9f, textSmall)
         drawCheckbox(canvas1, MARGIN_LEFT + 510f, currentY + 2f, report.remocaoFresca, linePaint)
         canvas1.drawText("FRESCA", MARGIN_LEFT + 519f, currentY + 9f, textSmall)
         drawCheckbox(canvas1, MARGIN_LEFT + 548f, currentY + 2f, report.remocaoFogo, linePaint)
         canvas1.drawText("FOGO", MARGIN_LEFT + 557f, currentY + 9f, textSmall)
+        **/
+
+        drawCheckbox(canvas1, MARGIN_LEFT + 315f, currentY + 2f, report.metodoLaminado, linePaint)
+        canvas1.drawText("LAMINADO", MARGIN_LEFT + 325f, currentY + 9f, textSmall)
+        drawCheckbox(canvas1, MARGIN_LEFT + 375f, currentY + 2f, report.remocaoFresca || report.remocaoFogo, linePaint)
+        canvas1.drawText("REMOÇÃO", MARGIN_LEFT + 385f, currentY + 9f, textSmall)
+        drawCheckbox(canvas1, MARGIN_LEFT + 425f, currentY + 2f, report.remocaoFresca, linePaint)
+        canvas1.drawText("FRESCA", MARGIN_LEFT + 434f, currentY + 9f, textSmall)
+        drawCheckbox(canvas1, MARGIN_LEFT + 463f, currentY + 2f, report.remocaoFogo, linePaint)
+        canvas1.drawText("FOGO", MARGIN_LEFT + 472f, currentY + 9f, textSmall)
 
         canvas1.drawLine(MARGIN_LEFT, currentY + metRowH, MARGIN_RIGHT, currentY + metRowH, thinLinePaint)
         currentY += metRowH
