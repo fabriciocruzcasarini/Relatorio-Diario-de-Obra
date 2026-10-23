@@ -88,4 +88,36 @@ class ExampleRobolectricTest {
         assertEquals(14, page3Start)
         assertEquals(15, page3End)
     }
+
+    @Test
+    fun `verify company settings default signature properties`() {
+        val settings = CompanySettings(
+            nomeEmpresa = "Impacto Sinalização Ltda",
+            defaultAssinaturaPath = "/data/user/0/com.aistudio.rdosinalizacao.vhbqtz/files/signatures/sig_photo_123.png",
+            defaultResponsavelNome = "Carlos Encarregado"
+        )
+        assertEquals("/data/user/0/com.aistudio.rdosinalizacao.vhbqtz/files/signatures/sig_photo_123.png", settings.defaultAssinaturaPath)
+        assertEquals("Carlos Encarregado", settings.defaultResponsavelNome)
+    }
+
+    @Test
+    fun `verify signature aspect ratio fit calculation`() {
+        val maxW = 150f
+        val maxH = 40f
+
+        // Wide photo signature (e.g. 600x200 -> aspect 3:1)
+        val bWidth = 600f
+        val bHeight = 200f
+        val scale = minOf(maxW / bWidth, maxH / bHeight)
+        val drawW = bWidth * scale
+        val drawH = bHeight * scale
+
+        // Scale should be constrained by height (40 / 200 = 0.20)
+        assertEquals(0.20f, scale, 0.001f)
+        assertEquals(120f, drawW, 0.001f)
+        assertEquals(40f, drawH, 0.001f)
+        assertTrue(drawW <= maxW)
+        assertTrue(drawH <= maxH)
+    }
 }
+

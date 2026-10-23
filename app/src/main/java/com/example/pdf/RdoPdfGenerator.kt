@@ -600,8 +600,17 @@ object RdoPdfGenerator {
                 val sigFile = File(report.assinaturaBitmapPath)
                 if (sigFile.exists()) {
                     val bitmap = BitmapFactory.decodeFile(sigFile.absolutePath)
-                    if (bitmap != null) {
-                        val destRect = RectF(rightX + 20f, sigAreaY + 4f, rightX + 160f, sigAreaY + sigAreaH - 18f)
+                    if (bitmap != null && bitmap.width > 0 && bitmap.height > 0) {
+                        val maxW = 150f
+                        val maxH = (sigAreaH - 24f).coerceAtLeast(10f)
+                        val bWidth = bitmap.width.toFloat()
+                        val bHeight = bitmap.height.toFloat()
+                        val scale = minOf(maxW / bWidth, maxH / bHeight)
+                        val drawW = bWidth * scale
+                        val drawH = bHeight * scale
+                        val startX = rightX + 20f + (maxW - drawW) / 2f
+                        val startY = sigAreaY + 2f + (maxH - drawH) / 2f
+                        val destRect = RectF(startX, startY, startX + drawW, startY + drawH)
                         canvas.drawBitmap(bitmap, null, destRect, null)
                     }
                 }

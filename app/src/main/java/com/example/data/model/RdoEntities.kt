@@ -116,7 +116,9 @@ data class CompanySettings(
     val subtitulo: String = "Sinalização Viária Horizontal e Vertical",
     val cnpj: String = "",
     val telefone: String = "",
-    val email: String = ""
+    val email: String = "",
+    val defaultAssinaturaPath: String? = null,
+    val defaultResponsavelNome: String = ""
 )
 
 data class RdoWithDetails(

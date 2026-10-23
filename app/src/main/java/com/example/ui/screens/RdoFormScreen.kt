@@ -23,7 +23,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.example.data.model.*
-import com.example.ui.components.SignaturePad
+import com.example.ui.components.SignaturePhotoPicker
 import com.example.ui.viewmodel.RdoViewModel
 import com.example.util.FormatUtils
 import java.io.File
@@ -44,6 +44,7 @@ fun RdoFormScreen(
     val materialItems by viewModel.materialItems.collectAsState()
     val activeTab by viewModel.activeTab.collectAsState()
     val isGeneratingPdf by viewModel.isGeneratingPdf.collectAsState()
+    val companySettings by viewModel.companySettings.collectAsState()
 
     val tabTitles = listOf("1. Identificação", "2. Condições", "3. Produção", "4. Recursos", "5. Assinatura")
 
@@ -284,8 +285,12 @@ fun RdoFormScreen(
                     )
                     4 -> TabLiberacaoAssinatura(
                         report = report,
+                        defaultSignaturePath = companySettings.defaultAssinaturaPath,
                         onUpdate = viewModel::updateReport,
-                        onSignatureSaved = viewModel::setSignaturePath,
+                        onSignatureChanged = viewModel::setSignaturePath,
+                        onSetAsDefault = { path ->
+                            viewModel.setDefaultSignature(path, report.responsavelNome)
+                        },
                         onGeneratePdf = {
                             validateAndProceed {
                                 viewModel.generatePdf { file ->
@@ -1185,8 +1190,10 @@ private fun TabRecursosMateriais(
 @Composable
 private fun TabLiberacaoAssinatura(
     report: RdoReport,
+    defaultSignaturePath: String?,
     onUpdate: ((RdoReport) -> RdoReport) -> Unit,
-    onSignatureSaved: (String) -> Unit,
+    onSignatureChanged: (String?) -> Unit,
+    onSetAsDefault: (String) -> Unit,
     onGeneratePdf: () -> Unit,
     isGenerating: Boolean
 ) {
@@ -1241,10 +1248,12 @@ private fun TabLiberacaoAssinatura(
             )
         }
 
-        SectionCard(title = "Assinatura Digital em Tela") {
-            SignaturePad(
-                initialSignaturePath = report.assinaturaBitmapPath,
-                onSignatureSaved = onSignatureSaved
+        SectionCard(title = "Assinatura do Encarregado / Fiscal") {
+            SignaturePhotoPicker(
+                currentSignaturePath = report.assinaturaBitmapPath,
+                defaultSignaturePath = defaultSignaturePath,
+                onSignatureChanged = onSignatureChanged,
+                onSetAsDefault = onSetAsDefault
             )
         }
 

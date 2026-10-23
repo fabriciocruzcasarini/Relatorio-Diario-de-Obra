@@ -67,7 +67,14 @@ class RdoViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun startNewRdo() {
-        _currentReport.value = createEmptyReport()
+        val empty = createEmptyReport()
+        val defaultSig = companySettings.value.defaultAssinaturaPath?.takeIf { File(it).exists() }
+        val defaultName = companySettings.value.defaultResponsavelNome.takeIf { it.isNotBlank() }
+
+        _currentReport.value = empty.copy(
+            assinaturaBitmapPath = defaultSig,
+            responsavelNome = defaultName ?: empty.responsavelNome
+        )
         _productionItems.value = listOf(
             RdoProductionItem(
                 servicoExecutado = "LBO (Bordo)",
@@ -227,8 +234,19 @@ class RdoViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun setSignaturePath(path: String) {
+    fun setSignaturePath(path: String?) {
         _currentReport.value = _currentReport.value.copy(assinaturaBitmapPath = path)
+    }
+
+    fun setDefaultSignature(path: String, name: String = "") {
+        viewModelScope.launch {
+            val current = companySettings.value
+            val updated = current.copy(
+                defaultAssinaturaPath = path,
+                defaultResponsavelNome = if (name.isNotBlank()) name else current.defaultResponsavelNome
+            )
+            repository.saveCompanySettings(updated)
+        }
     }
 
     fun saveReport(onSaved: (Long) -> Unit = {}) {
