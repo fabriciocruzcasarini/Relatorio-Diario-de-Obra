@@ -1,79 +1,43 @@
-# Análise de QA e Plano de Melhorias - Relatório Diário de Obra
+# Plano de Correção de Inconsistências e Usabilidade - Relatório Diário de Obra
 
-Plano de refinamento e correções identificado na análise de qualidade (QA) do aplicativo de Relatório Diário de Obra (RDO - Sinalização Horizontal), visando robustez de dados em campo, flexibilidade de digitação numérica, validação preventiva e expansão da geração do PDF para múltiplos trechos.
+Plano para solucionar as inconsistências de digitação e fluxo identificadas na auditoria de qualidade, garantindo fluidez no preenchimento em campo e precisão na exportação dos relatórios.
 
 ---
 
-## Diagnóstico de QA e Decisões Confirmadas
+## Inconsistências Diagnosticadas e Soluções Confirmadas
 
 > [!IMPORTANT]
-> A análise de QA levantou os seguintes pontos críticos, confirmados pelo usuário:
+> Decisões e soluções confirmadas pelo usuário para esta rodada de ajustes:
 
-1. **Parser Numérico Brasileiro (Vírgula e Ponto)**:
-   - *Problema*: Usuários em dispositivos em português digitam medidas com vírgula (ex: `1,5` ou `0,15`). O método `toDoubleOrNull()` nativo falha silenciosamente, zerando a área calculada.
-   - *Solução*: Implementação de normalizador robusto que converte vírgula para ponto e formata de acordo com a localidade brasileira.
-2. **Validação de Campos Obrigatórios com Alertas Visuais**:
-   - *Problema*: Emissão de relatório com campos em branco (como Obra, Cliente, Fiscal ou Data), gerando PDFs incompletos.
-   - *Solução*: Verificação de integridade antes da emissão, destacando em vermelho os campos pendentes e exibindo mensagem instrutiva (Snackbar/Dialog).
-3. **Seletor Visual de Data (DatePicker)**:
-   - *Problema*: Digitação manual livre suscetível a erros de digitação (ex: barras invertidas, formatos invertidos).
-   - *Solução*: Integração com o componente nativo `DatePickerDialog` do Material 3, garantindo padrão `DD/MM/AAAA`.
-4. **Paginação Automática no PDF (Anexos de Produção)**:
-   - *Problema*: Em obras de rodovias extensas com mais de 7 trechos de sinalização, itens adicionais eram omitidos na página principal.
-   - *Solução*: Se houver mais de 7 trechos, a página 1 exibe os 7 primeiros e a página 2 (ou subsequentes) gera o anexo "CONTINUAÇÃO DO RELATÓRIO DE PRODUÇÃO" com cabeçalho resumido e totalizadores consolidados.
-5. **Sincronização de Metadados e Nome do Aplicativo**:
-   - Atualização do `app_name` em `res/values/strings.xml` para `"Relatório Diário de Obra"`, alinhado com `metadata.json`.
+1. **Digitação Livre de Decimais sem Apagar Vírgula/Ponto**:
+   - *Problema*: Ao digitar `"15,"`, a conversão imediata para `Double` e formatação reversa apagava o caractere `","` antes que o usuário pudesse digitar a casa decimal (ex: `"5"`).
+   - *Solução*: Manter o estado do texto bruto (`String`) durante a digitação no componente `ProductionItemCard`, sincronizando o valor numérico `comprimentoM` e recalculando `totalM2` sem forçar a reescrita do campo digitado pelo usuário.
+2. **Salvamento Automático da Assinatura Digital**:
+   - *Problema*: Se o fiscal desenhasse a assinatura no pad e tocasse diretamente em "Emitir RDO em PDF" ou "Salvar" no topo da tela, a assinatura não era salva caso ele não tivesse clicado no pequeno botão "Salvar" interno do pad.
+   - *Solução*: Conectar o `SignaturePad` para expor o estado do desenho e gravar o arquivo bitmap automaticamente no momento do salvamento ou da emissão do relatório, eliminando perdas acidentais de assinatura.
+3. **Harmonização do Total Consolidado no Anexo do PDF**:
+   - *Problema*: Na página 1, a posição do rótulo "TOTAL EXECUTADO" foi aprimorada com `measureText`, mas no rodapé do Anexo (página 2+) a posição ainda utilizava coordenadas estáticas que podiam sobrepor o texto em números grandes.
+   - *Solução*: Aplicar a mesma lógica de cálculo dinâmico de largura com `measureText` na página de anexo, mantendo o layout limpo e padronizado em todas as páginas.
+4. **Alinhamento e Limpeza de Código**:
+   - Manter os ajustes manuais feitos na posição de "LAMINADO" e "REMOÇÃO", limpando blocos comentados obsoletos.
 
 ---
 
-## 1. Visão Geral das Melhorias
+## 1. Visão Geral das Alterações Técnicas
 
-- **Confiabilidade Matemática**: Garantia de que qualquer valor decimal digitado em campo (ex: `0,15`, `0.15`, `1250,5`) resulte no cálculo preciso da área em metros quadrados ($M^2$) e totalizador geral.
-- **Prevenção de Erros Humanos**: Fiscalização guiada onde o engenheiro ou apontador não perde dados e recebe alertas amigáveis caso esqueça de identificar a rodovia ou o fiscal responsável.
-- **Relatórios Extensos**: Capacidade de registrar 10, 20 ou mais trechos de pintura no mesmo RDO sem perda de informação no PDF oficial.
-
----
-
-## 2. Experiência do Usuário e Ajustes na Interface
-
-### Fluxo de Validação e Feedback
-- Ao tocar em **"Gerar PDF & WhatsApp"**:
-  - Se os campos essenciais (**Nome da Obra**, **Cliente**, **Data da Obra** e **Fiscal**) estiverem preenchidos: o PDF é gerado e a janela de compartilhamento abre imediatamente.
-  - Se faltar algum campo: uma barra de alerta suave informa qual informação está faltando e a tela foca na aba correspondente.
-
-### Seletor de Data Amigável
-- O campo de data passa a ter um ícone de calendário clicável que abre o calendário visual, além de permitir digitação rápida com máscara.
+- **`RdoFormScreen.kt`**:
+  - `ProductionItemCard`: Adicionar buffers de texto locais (`remember { mutableStateOf(...) }`) para `comprimentoStr`, `larguraStr` e `totalM2Str`, permitindo digitação fluida com vírgulas e pontos.
+  - `SignaturePad`: Adicionar callback/handler de exportação imediata ou salvamento sob demanda.
+- **`SignaturePad.kt`**:
+  - Expor função para exportar o traço diretamente ao acionar "Salvar Relatório" ou "Emitir PDF".
+- **`RdoPdfGenerator.kt`**:
+  - Harmonizar o total da página de anexo com `measureText` e alinhar o layout conforme os ajustes manuais recentes.
 
 ---
 
-## 3. Arquitetura da Solução Técnica
+## 2. Próximos Passos de Execução
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                     Camada de Apresentação                      │
-│                                                                 │
-│   RdoFormScreen                                                 │
-│    ├── NumberFormatHelper (normaliza '1,5' -> 1.5)              │
-│    ├── Material 3 DatePickerDialog                              │
-│    └── FormValidationState (erros em Obra, Cliente, Fiscal)     │
-└────────────────────────────────┬────────────────────────────────┘
-                                 │
-┌────────────────────────────────▼────────────────────────────────┐
-│                     Motor de Geração de PDF                     │
-│                                                                 │
-│   RdoPdfGenerator                                               │
-│    ├── Página 1: Folha Principal (RDO Padrão até 7 itens)       │
-│    └── Página 2+: Anexo de Produção (Se trechos > 7)            │
-│         └── Totalizador Geral Consolidado                       │
-└─────────────────────────────────────────────────────────────────┘
-```
-
----
-
-## 4. Próximos Passos de Execução
-
-1. Atualizar `res/values/strings.xml` para refletir `"Relatório Diário de Obra"`.
-2. Criar `FormatUtils.kt` com parser seguro de números decimais tolerante a vírgulas e pontos.
-3. Atualizar `RdoPdfGenerator.kt` para suportar paginação automática de anexos de produção quando houver mais de 7 itens.
-4. Adicionar seletor `DatePickerDialog` e validação visual de formulário no `RdoFormScreen.kt`.
-5. Executar os testes automatizados e compilar o applet via `compile_applet`.
+1. Atualizar `SignaturePad.kt` para suportar exportação direta e automática dos traços desenhados.
+2. Atualizar `RdoFormScreen.kt` com buffers de texto para digitação contínua e integração do salvamento automático da assinatura.
+3. Atualizar `RdoPdfGenerator.kt` harmonizando a renderização do total no anexo de produção.
+4. Rodar a suíte de testes unitários e compilar o applet via `compile_applet`.

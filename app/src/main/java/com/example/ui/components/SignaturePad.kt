@@ -42,7 +42,19 @@ fun SignaturePad(
     val currentPath = remember { mutableStateOf(Path()) }
     val paths = remember { mutableStateListOf<Path>() }
     var hasDrawn by remember { mutableStateOf(false) }
-    var savedMessage by remember { mutableStateOf<String?>(null) }
+    var savedMessage by remember { mutableStateOf<String?>(
+        if (!initialSignaturePath.isNullOrBlank() && File(initialSignaturePath).exists()) "Assinatura registrada" else null
+    ) }
+
+    fun autoSave() {
+        if (paths.isNotEmpty()) {
+            val filePath = savePathsToBitmap(context, paths)
+            if (filePath != null) {
+                onSignatureSaved(filePath)
+                savedMessage = "Assinatura capturada automaticamente"
+            }
+        }
+    }
 
     Column(
         modifier = modifier
@@ -70,6 +82,7 @@ fun SignaturePad(
                         currentPath.value = Path()
                         hasDrawn = false
                         savedMessage = null
+                        onSignatureSaved("")
                     },
                     contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp),
                     modifier = Modifier.testTag("clear_signature_button")
@@ -81,11 +94,7 @@ fun SignaturePad(
 
                 Button(
                     onClick = {
-                        val filePath = savePathsToBitmap(context, paths)
-                        if (filePath != null) {
-                            onSignatureSaved(filePath)
-                            savedMessage = "Assinatura capturada com sucesso!"
-                        }
+                        autoSave()
                     },
                     enabled = hasDrawn,
                     contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
@@ -121,16 +130,19 @@ fun SignaturePad(
                         },
                         onDrag = { change, _ ->
                             currentPath.value.lineTo(change.position.x, change.position.y)
-                            // trigger recomposition
                             val last = paths.removeAt(paths.lastIndex)
                             paths.add(last)
+                        },
+                        onDragEnd = {
+                            // Salva automaticamente ao terminar o traço
+                            autoSave()
                         }
                     )
                 }
                 .testTag("signature_canvas_box")
         ) {
             Canvas(modifier = Modifier.fillMaxSize()) {
-                // Baseline guide line
+                // Linha base de guia
                 drawLine(
                     color = androidx.compose.ui.graphics.Color(0xFFCBD5E1),
                     start = Offset(20f, size.height - 30f),
@@ -151,7 +163,7 @@ fun SignaturePad(
                 }
             }
 
-            if (!hasDrawn && initialSignaturePath == null) {
+            if (!hasDrawn && initialSignaturePath.isNullOrBlank()) {
                 Text(
                     text = "Toque e desenhe a assinatura aqui",
                     style = MaterialTheme.typography.bodySmall,

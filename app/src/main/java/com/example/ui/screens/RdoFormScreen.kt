@@ -857,6 +857,19 @@ private fun ProductionItemCard(
     onUpdate: (RdoProductionItem) -> Unit,
     onRemove: () -> Unit
 ) {
+    var compText by remember(item.id, index) {
+        mutableStateOf(if (item.comprimentoM > 0) FormatUtils.formatDecimal(item.comprimentoM, 1) else "")
+    }
+    var largText by remember(item.id, index) {
+        mutableStateOf(if (item.larguraM > 0) FormatUtils.formatDecimal(item.larguraM, 2) else "")
+    }
+    var faixasText by remember(item.id, index) {
+        mutableStateOf(item.quantFaixas.toString())
+    }
+    var totalM2Text by remember(item.id, index) {
+        mutableStateOf(if (item.totalM2 > 0) FormatUtils.formatDecimal(item.totalM2, 2) else "")
+    }
+
     Card(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         shape = RoundedCornerShape(10.dp),
@@ -916,11 +929,15 @@ private fun ProductionItemCard(
 
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 OutlinedTextField(
-                    value = item.quantFaixas.toString(),
+                    value = faixasText,
                     onValueChange = { v ->
+                        faixasText = v
                         val faixas = v.toIntOrNull() ?: 1
-                        val m2 = faixas * item.comprimentoM * item.larguraM
-                        onUpdate(item.copy(quantFaixas = faixas, totalM2 = Math.round(m2 * 100.0) / 100.0))
+                        val comp = FormatUtils.parseBrazilianDecimal(compText)
+                        val larg = FormatUtils.parseBrazilianDecimal(largText)
+                        val m2 = Math.round(faixas * comp * larg * 100.0) / 100.0
+                        totalM2Text = if (m2 > 0) FormatUtils.formatDecimal(m2, 2) else ""
+                        onUpdate(item.copy(quantFaixas = faixas, totalM2 = m2))
                     },
                     label = { Text("Qtd Faixas") },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
@@ -928,11 +945,15 @@ private fun ProductionItemCard(
                     modifier = Modifier.weight(1f)
                 )
                 OutlinedTextField(
-                    value = if (item.comprimentoM > 0) FormatUtils.formatDecimal(item.comprimentoM, 1) else "",
+                    value = compText,
                     onValueChange = { v ->
+                        compText = v
                         val comp = FormatUtils.parseBrazilianDecimal(v)
-                        val m2 = item.quantFaixas * comp * item.larguraM
-                        onUpdate(item.copy(comprimentoM = comp, totalM2 = Math.round(m2 * 100.0) / 100.0))
+                        val faixas = faixasText.toIntOrNull() ?: 1
+                        val larg = FormatUtils.parseBrazilianDecimal(largText)
+                        val m2 = Math.round(faixas * comp * larg * 100.0) / 100.0
+                        totalM2Text = if (m2 > 0) FormatUtils.formatDecimal(m2, 2) else ""
+                        onUpdate(item.copy(comprimentoM = comp, totalM2 = m2))
                     },
                     label = { Text("Comprimento (M)") },
                     placeholder = { Text("ex: 1500,5") },
@@ -941,11 +962,15 @@ private fun ProductionItemCard(
                     modifier = Modifier.weight(1.2f)
                 )
                 OutlinedTextField(
-                    value = if (item.larguraM > 0) FormatUtils.formatDecimal(item.larguraM, 2) else "",
+                    value = largText,
                     onValueChange = { v ->
+                        largText = v
                         val larg = FormatUtils.parseBrazilianDecimal(v)
-                        val m2 = item.quantFaixas * item.comprimentoM * larg
-                        onUpdate(item.copy(larguraM = larg, totalM2 = Math.round(m2 * 100.0) / 100.0))
+                        val comp = FormatUtils.parseBrazilianDecimal(compText)
+                        val faixas = faixasText.toIntOrNull() ?: 1
+                        val m2 = Math.round(faixas * comp * larg * 100.0) / 100.0
+                        totalM2Text = if (m2 > 0) FormatUtils.formatDecimal(m2, 2) else ""
+                        onUpdate(item.copy(larguraM = larg, totalM2 = m2))
                     },
                     label = { Text("Largura (M)") },
                     placeholder = { Text("ex: 0,15") },
@@ -957,8 +982,9 @@ private fun ProductionItemCard(
 
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 OutlinedTextField(
-                    value = if (item.totalM2 > 0) FormatUtils.formatDecimal(item.totalM2, 2) else "",
+                    value = totalM2Text,
                     onValueChange = { v ->
+                        totalM2Text = v
                         val m2 = FormatUtils.parseBrazilianDecimal(v)
                         onUpdate(item.copy(totalM2 = m2))
                     },

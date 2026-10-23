@@ -316,17 +316,6 @@ object RdoPdfGenerator {
 
         canvas1.drawText("TIPO:", MARGIN_LEFT + 265f, currentY + 9f, textBold)
 
-        /* Aletração e Ajuste da posição nal linha
-        drawCheckbox(canvas1, MARGIN_LEFT + 400f, currentY + 2f, report.metodoLaminado, linePaint)
-        canvas1.drawText("LAMINADO", MARGIN_LEFT + 410f, currentY + 9f, textSmall)
-        drawCheckbox(canvas1, MARGIN_LEFT + 460f, currentY + 2f, report.remocaoFresca || report.remocaoFogo, linePaint)
-        canvas1.drawText("REMOÇÃO", MARGIN_LEFT + 470f, currentY + 9f, textSmall)
-        drawCheckbox(canvas1, MARGIN_LEFT + 510f, currentY + 2f, report.remocaoFresca, linePaint)
-        canvas1.drawText("FRESCA", MARGIN_LEFT + 519f, currentY + 9f, textSmall)
-        drawCheckbox(canvas1, MARGIN_LEFT + 548f, currentY + 2f, report.remocaoFogo, linePaint)
-        canvas1.drawText("FOGO", MARGIN_LEFT + 557f, currentY + 9f, textSmall)
-        **/
-
         drawCheckbox(canvas1, MARGIN_LEFT + 315f, currentY + 2f, report.metodoLaminado, linePaint)
         canvas1.drawText("LAMINADO", MARGIN_LEFT + 325f, currentY + 9f, textSmall)
         drawCheckbox(canvas1, MARGIN_LEFT + 375f, currentY + 2f, report.remocaoFresca || report.remocaoFogo, linePaint)
@@ -426,35 +415,23 @@ object RdoPdfGenerator {
             currentY += prodRowH
         }
 
-        /* TOTAL EXECUTADO Row
+        // TOTAL EXECUTADO Row
         val totalRowH = 14f
         canvas1.drawRect(MARGIN_LEFT, currentY, MARGIN_RIGHT, currentY + totalRowH, subheaderFillPaint)
         canvas1.drawLine(MARGIN_LEFT, currentY + totalRowH, MARGIN_RIGHT, currentY + totalRowH, linePaint)
+
         val textTotalPaint = Paint(textBold).apply { textAlign = Paint.Align.RIGHT }
         val labelTotal = if (allProdItems.size > 7) "TOTAL GERAL CONSOLIDADO: " else "TOTAL EXECUTADO: "
-        canvas1.drawText(labelTotal, MARGIN_RIGHT - 110f, currentY + 10f, textTotalPaint)
         val totalStr = String.format(Locale.US, "%.2f M²", grandTotalM2)
-        canvas1.drawText(totalStr, MARGIN_RIGHT - 10f, currentY + 10f, textBold)
+
+        // 1. Desenha o valor numérico na extremidade direita
+        canvas1.drawText(totalStr, MARGIN_RIGHT - 10f, currentY + 10f, textTotalPaint)
+
+        // 2. Calcula a largura do valor numérico para posicionar o rótulo logo antes dele (com 15f de espaço)
+        val totalStrWidth = textTotalPaint.measureText(totalStr)
+        canvas1.drawText(labelTotal, MARGIN_RIGHT - 10f - totalStrWidth - 15f, currentY + 10f, textTotalPaint)
+
         currentY += totalRowH
-        */
-
-        // TOTAL EXECUTADO Row
-val totalRowH = 14f
-canvas1.drawRect(MARGIN_LEFT, currentY, MARGIN_RIGHT, currentY + totalRowH, subheaderFillPaint)
-canvas1.drawLine(MARGIN_LEFT, currentY + totalRowH, MARGIN_RIGHT, currentY + totalRowH, linePaint)
-
-val textTotalPaint = Paint(textBold).apply { textAlign = Paint.Align.RIGHT }
-val labelTotal = if (allProdItems.size > 7) "TOTAL GERAL CONSOLIDADO: " else "TOTAL EXECUTADO: "
-val totalStr = String.format(Locale.US, "%.2f M²", grandTotalM2)
-
-// 1. Desenha o valor numérico na extremidade direita
-canvas1.drawText(totalStr, MARGIN_RIGHT - 10f, currentY + 10f, textTotalPaint)
-
-// 2. Calcula a largura do valor numérico para posicionar o rótulo logo antes dele (com 15f de espaço)
-val totalStrWidth = textTotalPaint.measureText(totalStr)
-canvas1.drawText(labelTotal, MARGIN_RIGHT - 10f - totalStrWidth - 15f, currentY + 10f, textTotalPaint)
-
-currentY += totalRowH
 
         // 8. BANNER: RECURSOS
         canvas1.drawRect(MARGIN_LEFT, currentY, MARGIN_RIGHT, currentY + bannerH, subheaderFillPaint)
@@ -715,8 +692,10 @@ currentY += totalRowH
                 if (pageIdx == totalAnnexPages - 1) {
                     canvasA.drawRect(MARGIN_LEFT, ay, MARGIN_RIGHT, ay + totalRowH, subheaderFillPaint)
                     canvasA.drawLine(MARGIN_LEFT, ay + totalRowH, MARGIN_RIGHT, ay + totalRowH, linePaint)
-                    canvasA.drawText("TOTAL GERAL CONSOLIDADO DE TODOS OS TRECHOS: ", MARGIN_RIGHT - 110f, ay + 10f, textTotalPaint)
-                    canvasA.drawText(totalStr, MARGIN_RIGHT - 10f, ay + 10f, textBold)
+                    val labelConsolidado = "TOTAL GERAL CONSOLIDADO DE TODOS OS TRECHOS: "
+                    canvasA.drawText(totalStr, MARGIN_RIGHT - 10f, ay + 10f, textTotalPaint)
+                    val totalStrWidth = textTotalPaint.measureText(totalStr)
+                    canvasA.drawText(labelConsolidado, MARGIN_RIGHT - 10f - totalStrWidth - 15f, ay + 10f, textTotalPaint)
                 }
 
                 document.finishPage(annexPage)
