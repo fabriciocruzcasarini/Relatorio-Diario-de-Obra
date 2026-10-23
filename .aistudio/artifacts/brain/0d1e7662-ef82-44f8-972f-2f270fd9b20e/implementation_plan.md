@@ -1,43 +1,65 @@
-# Plano de Correção de Inconsistências e Usabilidade - Relatório Diário de Obra
+# Plano de Geração de PDF com Folhas Completas Padronizadas
 
-Plano para solucionar as inconsistências de digitação e fluxo identificadas na auditoria de qualidade, garantindo fluidez no preenchimento em campo e precisão na exportação dos relatórios.
+Reestruturação do motor de geração de PDF do Relatório Diário de Obra (RDO) para que, quando a quantidade de trechos ultrapassar a capacidade da grade de produção (7 itens), sejam geradas folhas completas idênticas à folha 1, contendo todos os dados cadastrais, fechamento, clima, recursos, materiais, rodapé normativo e assinatura, alterando apenas a partição dos itens de produção e exibindo subtotal e total geral.
 
 ---
 
-## Inconsistências Diagnosticadas e Soluções Confirmadas
+## Decisões Confirmadas pelo Usuário
 
 > [!IMPORTANT]
-> Decisões e soluções confirmadas pelo usuário para esta rodada de ajustes:
+> Definições alinhadas para a emissão multi-folhas:
 
-1. **Digitação Livre de Decimais sem Apagar Vírgula/Ponto**:
-   - *Problema*: Ao digitar `"15,"`, a conversão imediata para `Double` e formatação reversa apagava o caractere `","` antes que o usuário pudesse digitar a casa decimal (ex: `"5"`).
-   - *Solução*: Manter o estado do texto bruto (`String`) durante a digitação no componente `ProductionItemCard`, sincronizando o valor numérico `comprimentoM` e recalculando `totalM2` sem forçar a reescrita do campo digitado pelo usuário.
-2. **Salvamento Automático da Assinatura Digital**:
-   - *Problema*: Se o fiscal desenhasse a assinatura no pad e tocasse diretamente em "Emitir RDO em PDF" ou "Salvar" no topo da tela, a assinatura não era salva caso ele não tivesse clicado no pequeno botão "Salvar" interno do pad.
-   - *Solução*: Conectar o `SignaturePad` para expor o estado do desenho e gravar o arquivo bitmap automaticamente no momento do salvamento ou da emissão do relatório, eliminando perdas acidentais de assinatura.
-3. **Harmonização do Total Consolidado no Anexo do PDF**:
-   - *Problema*: Na página 1, a posição do rótulo "TOTAL EXECUTADO" foi aprimorada com `measureText`, mas no rodapé do Anexo (página 2+) a posição ainda utilizava coordenadas estáticas que podiam sobrepor o texto em números grandes.
-   - *Solução*: Aplicar a mesma lógica de cálculo dinâmico de largura com `measureText` na página de anexo, mantendo o layout limpo e padronizado em todas as páginas.
-4. **Alinhamento e Limpeza de Código**:
-   - Manter os ajustes manuais feitos na posição de "LAMINADO" e "REMOÇÃO", limpando blocos comentados obsoletos.
-
----
-
-## 1. Visão Geral das Alterações Técnicas
-
-- **`RdoFormScreen.kt`**:
-  - `ProductionItemCard`: Adicionar buffers de texto locais (`remember { mutableStateOf(...) }`) para `comprimentoStr`, `larguraStr` e `totalM2Str`, permitindo digitação fluida com vírgulas e pontos.
-  - `SignaturePad`: Adicionar callback/handler de exportação imediata ou salvamento sob demanda.
-- **`SignaturePad.kt`**:
-  - Expor função para exportar o traço diretamente ao acionar "Salvar Relatório" ou "Emitir PDF".
-- **`RdoPdfGenerator.kt`**:
-  - Harmonizar o total da página de anexo com `measureText` e alinhar o layout conforme os ajustes manuais recentes.
+1. **Estrutura Idêntica em Todas as Páginas**:
+   - Cada folha gerada conterá o modelo completo do RDO (Cabeçalho da Empresa, Dados da Obra/Cliente, Fechamento de Faixa, Pavimento, Clima/Condições, Recursos, Materiais, Observações, Rodapé com diagramas normativos de faixas viárias e Assinatura Digital do fiscal).
+2. **Particionamento de Produção em Lotes de 7 Itens**:
+   - Folha 1: Trechos 1 a 7
+   - Folha 2: Trechos 8 a 14
+   - Folha 3 (se houver): Trechos 15 a 21, e assim por diante.
+3. **Indicador de Folha no Cabeçalho**:
+   - Exibição dinâmica no título central:
+     - Página única: `DIÁRIO DE OBRA - SINALIZAÇÃO HORIZONTAL`
+     - Múltiplas páginas: `DIÁRIO DE OBRA - SINALIZAÇÃO HORIZONTAL (FOLHA X DE Y)`
+4. **Subtotal da Página e Total Geral Consolidado**:
+   - Na linha de totalização de produção:
+     - Em folhas múltiplas: exibe o `SUBTOTAL PÁGINA: X,XX M²` e o `TOTAL GERAL: Y,YY M²`.
+     - Em folha única: exibe `TOTAL EXECUTADO: Y,YY M²`.
 
 ---
 
-## 2. Próximos Passos de Execução
+## 1. Arquitetura da Geração de Páginas
 
-1. Atualizar `SignaturePad.kt` para suportar exportação direta e automática dos traços desenhados.
-2. Atualizar `RdoFormScreen.kt` com buffers de texto para digitação contínua e integração do salvamento automático da assinatura.
-3. Atualizar `RdoPdfGenerator.kt` harmonizando a renderização do total no anexo de produção.
-4. Rodar a suíte de testes unitários e compilar o applet via `compile_applet`.
+```
+Lista de Itens de Produção (N itens)
+  │
+  ├── Partição em chunks de 7 itens: [1..7], [8..14], [15..21]...
+  │
+  └── Para cada chunk (Folha i de totalPages):
+       ├── document.startPage(pageInfo)
+       ├── Desenha Cabeçalho (com "FOLHA i DE totalPages")
+       ├── Desenha Dados Gerais, Fechamento, Pavimento e Clima
+       ├── Desenha Métodos de Aplicação (Laminado, Remoção, etc.)
+       ├── Desenha Tabela de Produção para o chunk atual (7 linhas)
+       ├── Desenha Linha de Total: Subtotal da Página + Total Geral Consolidado
+       ├── Desenha Recursos e Materiais
+       ├── Desenha Observações
+       ├── Desenha Rodapé com Gráfico de Faixas (LBO, LMS, LFO)
+       ├── Desenha Liberação da Obra, Assinatura Digital e Data
+       └── document.finishPage(page)
+```
+
+---
+
+## 2. Benefícios Técnicos e Operacionais em Campo
+
+- **Validade Jurídica e Fiscal**: Cada folha emitida é um documento autônomo e completo com a assinatura do fiscal e os dados da rodovia, sem fragmentação em anexos desprovidos de assinatura.
+- **Conferência Facilitada**: O fiscal e a concessionária podem conferir o subtotal de cada folha separadamente e o total geral consolidado acumulado de toda a obra.
+- **Fidelidade Visual 100%**: Todas as páginas mantêm exatamente o design original do modelo físico anexado.
+
+---
+
+## 3. Próximos Passos de Execução
+
+1. Refatorar a função de desenho de folha em `RdoPdfGenerator.kt` para uma função modular reutilizável `drawFullRdoSheet(canvas, report, prodChunk, pageIndex, totalPages, grandTotalM2)`.
+2. Implementar a exibição da paginação no título e a divisão entre subtotal da folha e total geral consolidado.
+3. Validar a geração com testes unitários cobrindo cenários de 1 folha e múltiplas folhas (ex: 15 itens gerando 3 folhas completas).
+4. Compilar e verificar o projeto com `compile_applet`.

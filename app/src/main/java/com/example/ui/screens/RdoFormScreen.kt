@@ -811,8 +811,9 @@ private fun TabProducao(
                             color = MaterialTheme.colorScheme.onPrimaryContainer
                         )
                         if (items.size > 7) {
+                            val totalFolhas = (items.size + 6) / 7
                             Text(
-                                text = "${items.size} trechos registrados (será gerado anexo de continuação)",
+                                text = "${items.size} trechos registrados (serão geradas $totalFolhas folhas completas do RDO)",
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.primary
                             )

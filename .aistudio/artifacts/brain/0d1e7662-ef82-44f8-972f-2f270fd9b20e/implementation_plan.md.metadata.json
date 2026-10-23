@@ -1,6 +1,6 @@
 {
-  "summary":  "Plano de resolução de inconsistências e melhorias de usabilidade no RDO, incluindo buffer de texto para digitação contínua de decimais com vírgula, salvamento automático da assinatura digital ao emitir/salvar o relatório e harmonização do total consolidado no anexo do PDF.",
-  "updatedAt":  "2026-10-23T01:28:57.093857236Z",
+  "summary":  "Plano para reformulação da geração do PDF em múltiplas páginas completas e idênticas à folha 1, particionando os itens de produção em blocos de 7 itens por folha, incluindo indicador de folha (ex: Folha 1 de 2) no título e exibindo tanto o subtotal da página quanto o total geral consolidado.",
+  "updatedAt":  "2026-10-23T01:47:27.601402796Z",
   "requestFeedback":  true,
   "userFacing":  true
 }
