@@ -68,25 +68,25 @@ class ExampleRobolectricTest {
 
     @Test
     fun `verify multi sheet page partition logic`() {
-        val itemsCount = 15
-        val itemsPerPage = 7
+        val itemsCount = 25
+        val itemsPerPage = 12
         val totalPages = (itemsCount + itemsPerPage - 1) / itemsPerPage
         assertEquals(3, totalPages)
 
         val page1Start = 0 * itemsPerPage
         val page1End = minOf(page1Start + itemsPerPage, itemsCount)
         assertEquals(0, page1Start)
-        assertEquals(7, page1End)
+        assertEquals(12, page1End)
 
         val page2Start = 1 * itemsPerPage
         val page2End = minOf(page2Start + itemsPerPage, itemsCount)
-        assertEquals(7, page2Start)
-        assertEquals(14, page2End)
+        assertEquals(12, page2Start)
+        assertEquals(24, page2End)
 
         val page3Start = 2 * itemsPerPage
         val page3End = minOf(page3Start + itemsPerPage, itemsCount)
-        assertEquals(14, page3Start)
-        assertEquals(15, page3End)
+        assertEquals(24, page3Start)
+        assertEquals(25, page3End)
     }
 
     @Test

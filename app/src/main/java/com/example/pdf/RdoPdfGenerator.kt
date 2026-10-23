@@ -16,7 +16,7 @@ object RdoPdfGenerator {
     private const val MARGIN_LEFT = 18f
     private const val MARGIN_RIGHT = 577f
     private const val CONTENT_WIDTH = MARGIN_RIGHT - MARGIN_LEFT
-    private const val ITEMS_PER_PAGE = 7
+    private const val ITEMS_PER_PAGE = 12
 
     fun generatePdf(
         context: Context,

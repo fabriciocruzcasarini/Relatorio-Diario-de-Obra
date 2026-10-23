@@ -1,6 +1,6 @@
 {
-  "summary":  "Plano de implementação para substituição do desenho manual por carregamento de foto da assinatura via Android Photo Picker, com persistência da assinatura padrão para novos RDOs e renderização com proporção preservada no rodapé do PDF.",
-  "updatedAt":  "2026-10-23T02:04:40.054791503Z",
+  "summary":  "Plano de implementação para alteração da paginação da tabela de produção no PDF de 7 para 12 itens por folha, mantendo a altura padrão de 13pt e 12 linhas com preenchimento padronizado.",
+  "updatedAt":  "2026-10-23T02:19:28.993173327Z",
   "requestFeedback":  true,
   "userFacing":  true
 }
