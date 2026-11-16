@@ -1,9 +1,14 @@
 package com.example
 
+import android.app.Application
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import com.example.data.model.*
+import com.example.ui.viewmodel.RdoViewModel
 import com.example.util.FormatUtils
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -93,11 +98,31 @@ class ExampleRobolectricTest {
     fun `verify company settings default signature properties`() {
         val settings = CompanySettings(
             nomeEmpresa = "Impacto Sinalização Ltda",
+            subtitulo = "Sinalização Viária Horizontal e Vertical",
             defaultAssinaturaPath = "/data/user/0/com.aistudio.rdosinalizacao.vhbqtz/files/signatures/sig_photo_123.png",
             defaultResponsavelNome = "Carlos Encarregado"
         )
+        assertEquals("Impacto Sinalização Ltda", settings.nomeEmpresa)
+        assertEquals("Sinalização Viária Horizontal e Vertical", settings.subtitulo)
         assertEquals("/data/user/0/com.aistudio.rdosinalizacao.vhbqtz/files/signatures/sig_photo_123.png", settings.defaultAssinaturaPath)
         assertEquals("Carlos Encarregado", settings.defaultResponsavelNome)
+    }
+
+    @Test
+    fun `verify report auto populates company settings signature and manager`() {
+        val settings = CompanySettings(
+            nomeEmpresa = "Minha Empresa de Sinalização",
+            subtitulo = "Engenharia de Tráfego",
+            defaultResponsavelNome = "Marcos Roberto (Encarregado Geral)",
+            defaultAssinaturaPath = "/tmp/sig.png"
+        )
+        val initialReport = RdoReport(
+            obra = "SP-300",
+            responsavelNome = settings.defaultResponsavelNome,
+            assinaturaBitmapPath = settings.defaultAssinaturaPath
+        )
+        assertEquals("Marcos Roberto (Encarregado Geral)", initialReport.responsavelNome)
+        assertEquals("/tmp/sig.png", initialReport.assinaturaBitmapPath)
     }
 
     @Test
@@ -118,6 +143,34 @@ class ExampleRobolectricTest {
         assertEquals(40f, drawH, 0.001f)
         assertTrue(drawW <= maxW)
         assertTrue(drawH <= maxH)
+    }
+
+    @Test
+    fun `verify startNewRdo clears form fields and item lists keeping only today date`() {
+        val app = ApplicationProvider.getApplicationContext<Application>()
+        val viewModel = RdoViewModel(app)
+
+        viewModel.startNewRdo()
+
+        val report = viewModel.currentReport.value
+        val expectedToday = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date())
+
+        assertEquals(expectedToday, report.dataObra)
+        assertEquals("", report.cliente)
+        assertEquals("", report.obra)
+        assertEquals("", report.veiculoKm)
+        assertEquals("", report.fiscal)
+        assertEquals("", report.horaSaida)
+        assertEquals("", report.horaChegada)
+        assertEquals("", report.fechamentoLocal)
+        assertEquals("", report.tipoPavimento)
+        assertEquals("", report.tempAmbiente)
+        assertEquals("", report.observacoes)
+        assertEquals("", report.responsavelNome)
+        assertTrue(viewModel.productionItems.value.isEmpty())
+        assertTrue(viewModel.resourceItems.value.isEmpty())
+        assertTrue(viewModel.materialItems.value.isEmpty())
+        assertTrue(viewModel.rdoList.value.isEmpty())
     }
 }
 

@@ -228,7 +228,7 @@ fun SignaturePhotoPicker(
     }
 }
 
-private fun copyUriToInternalStorage(context: Context, uri: Uri): String? {
+internal fun copyUriToInternalStorage(context: Context, uri: Uri): String? {
     return try {
         val sigDir = File(context.filesDir, "signatures")
         if (!sigDir.exists()) sigDir.mkdirs()

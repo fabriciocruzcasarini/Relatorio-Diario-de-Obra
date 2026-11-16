@@ -51,15 +51,6 @@ class RdoViewModel(application: Application) : AndroidViewModel(application) {
         companySettings = repository.getCompanySettings()
             .map { it ?: CompanySettings() }
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), CompanySettings())
-
-        // Insert sample initial RDO if database is empty on start
-        viewModelScope.launch {
-            repository.getAllReports().first().let { list ->
-                if (list.isEmpty()) {
-                    createSampleRdo()
-                }
-            }
-        }
     }
 
     fun setActiveTab(index: Int) {
@@ -73,62 +64,11 @@ class RdoViewModel(application: Application) : AndroidViewModel(application) {
 
         _currentReport.value = empty.copy(
             assinaturaBitmapPath = defaultSig,
-            responsavelNome = defaultName ?: empty.responsavelNome
+            responsavelNome = defaultName ?: ""
         )
-        _productionItems.value = listOf(
-            RdoProductionItem(
-                servicoExecutado = "LBO (Bordo)",
-                rodovia = "SP-330",
-                kmInicial = "102+000",
-                kmFinal = "105+500",
-                quantFaixas = 1,
-                comprimentoM = 3500.0,
-                larguraM = 0.15,
-                totalM2 = 525.0,
-                cor = "BRANCO",
-                espessuraMm = "0.6"
-            ),
-            RdoProductionItem(
-                servicoExecutado = "LMS-2 (Eixo)",
-                rodovia = "SP-330",
-                kmInicial = "102+000",
-                kmFinal = "105+500",
-                quantFaixas = 1,
-                comprimentoM = 1166.0,
-                larguraM = 0.15,
-                totalM2 = 174.9,
-                cor = "BRANCO",
-                espessuraMm = "0.6"
-            )
-        )
-        _resourceItems.value = listOf(
-            RdoResourceItem(
-                equipe = "Carlos (Encarregado), Marcos (Op. Caminhão), Tiago (Pintor)",
-                veiculos = "Caminhão Demarcador",
-                placa = "BRA-2E19",
-                equipamentosMedicao = "Espessímetro Digital, Higrômetro"
-            )
-        )
-        _materialItems.value = listOf(
-            RdoMaterialItem(
-                quantidade = "12",
-                unidade = "GL",
-                marca = "Indutil / Resicolor",
-                descricao = "Tinta Acrílica Solvente Branca",
-                fabricacao = "08/2026",
-                validade = "08/2027",
-                lote = "LT-4492"
-            ),
-            RdoMaterialItem(
-                quantidade = "6",
-                unidade = "SC",
-                marca = "Swarco",
-                descricao = "Microesferas de Vidro Tipo II-A",
-                fabricacao = "07/2026",
-                validade = "07/2028",
-                lote = "SW-9810"
-            )
-        )
+        _productionItems.value = emptyList()
+        _resourceItems.value = emptyList()
+        _materialItems.value = emptyList()
         _activeTab.value = 0
         _generatedPdfFile.value = null
     }
@@ -341,127 +281,14 @@ class RdoViewModel(application: Application) : AndroidViewModel(application) {
         val today = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date())
         return RdoReport(
             dataObra = today,
-            cliente = "ARTESP / CCR AutoBAn",
-            obra = "SP-330 Rod. Anhanguera",
-            veiculoKm = "142.500",
-            fiscal = "Eng. Marcos Roberto",
-            horaSaida = "07:30",
-            horaChegada = "17:45",
-            fechamentoLocal = "KM 102 ao 106 - Pista Norte",
-            fechamentoContato = "CCO AutoBAn - Ramal 4",
-            fechamentoHorario = "08:15",
-            fechamentoLiberadoPor = "Insp. Valter Mendes",
-            fechamentoHorarioFim = "17:10",
-            tipoPavimento = "CBUQ Novo",
-            pavimentoSeco = true,
-            repinturaSobre = "",
-            aderenciaPinturaAntiga = "Boa",
-            diasSemChuva = "5",
-            contaminacoes = "BOM",
-            pavimentoNovo = false,
-            tempoAberto = true,
-            tempAmbiente = "28°C",
-            umidadeRelativa = "52%",
-            pontoOrvalho = "17°C",
-            tempPavimento = "34°C",
-            liberacaoTrafegoMin = "30",
-            choveuAposPintura = "NÃO",
-            metodoAcrilicaSolvente = true,
-            metodoMecanico = true,
-            observacoes = "Serviço executado com sinalização prévia conforme norma DER/SP. Faixa liberada sem intercorrências.",
-            liberacaoStatus = "APROVADO",
-            responsavelNome = "Eng. Marcos Roberto (Fiscal)"
+            turnoDia = false,
+            pavimentoSeco = false,
+            contaminacoes = "",
+            tempoAberto = false,
+            choveuAposPintura = "",
+            metodoAcrilicaSolvente = false,
+            metodoMecanico = false,
+            liberacaoStatus = "APROVADO"
         )
-    }
-
-    private suspend fun createSampleRdo() {
-        val initialReport = createEmptyReport()
-        val reportId = repository.saveRdo(
-            initialReport,
-            listOf(
-                RdoProductionItem(
-                    servicoExecutado = "LBO (Bordo Direito)",
-                    rodovia = "SP-330",
-                    kmInicial = "102+000",
-                    kmFinal = "105+500",
-                    quantFaixas = 1,
-                    comprimentoM = 3500.0,
-                    larguraM = 0.15,
-                    totalM2 = 525.0,
-                    cor = "BRANCO",
-                    espessuraMm = "0.6"
-                ),
-                RdoProductionItem(
-                    servicoExecutado = "LMS-2 (Linha Tracejada Eixo)",
-                    rodovia = "SP-330",
-                    kmInicial = "102+000",
-                    kmFinal = "105+500",
-                    quantFaixas = 1,
-                    comprimentoM = 1166.0,
-                    larguraM = 0.15,
-                    totalM2 = 174.9,
-                    cor = "BRANCO",
-                    espessuraMm = "0.6"
-                ),
-                RdoProductionItem(
-                    servicoExecutado = "LFO-3 (Dupla Contínua)",
-                    rodovia = "SP-330",
-                    kmInicial = "105+500",
-                    kmFinal = "106+000",
-                    quantFaixas = 2,
-                    comprimentoM = 500.0,
-                    larguraM = 0.15,
-                    totalM2 = 150.0,
-                    cor = "AMARELO",
-                    espessuraMm = "0.6"
-                )
-            ),
-            listOf(
-                RdoResourceItem(
-                    equipe = "Carlos Alberto (Encarregado), Valdir (Motorista), Roberto (Pintor)",
-                    veiculos = "Caminhão Ford Cargo Demarcador",
-                    placa = "BRA-2E19",
-                    equipamentosMedicao = "Espessímetro Digital Elcometer, Termohigrômetro"
-                )
-            ),
-            listOf(
-                RdoMaterialItem(
-                    quantidade = "16",
-                    unidade = "GL",
-                    marca = "Indutil / Resicolor",
-                    descricao = "Tinta Acrílica Solvente Branca Tipo I",
-                    fabricacao = "08/2026",
-                    validade = "08/2027",
-                    lote = "LT-4492"
-                ),
-                RdoMaterialItem(
-                    quantidade = "4",
-                    unidade = "GL",
-                    marca = "Indutil / Resicolor",
-                    descricao = "Tinta Acrílica Solvente Amarela Tipo I",
-                    fabricacao = "08/2026",
-                    validade = "08/2027",
-                    lote = "LT-4493"
-                ),
-                RdoMaterialItem(
-                    quantidade = "8",
-                    unidade = "SC",
-                    marca = "Swarco",
-                    descricao = "Microesferas de Vidro Premix e Drop-on",
-                    fabricacao = "07/2026",
-                    validade = "07/2028",
-                    lote = "SW-9810"
-                )
-            )
-        )
-
-        // Generate sample PDF right away
-        try {
-            val rdoDetails = repository.getReportById(reportId).first()
-            if (rdoDetails != null) {
-                val pdf = RdoPdfGenerator.generatePdf(getApplication(), rdoDetails, null)
-                repository.updateReport(rdoDetails.report.copy(pdfGeradoPath = pdf.absolutePath))
-            }
-        } catch (_: Exception) {}
     }
 }

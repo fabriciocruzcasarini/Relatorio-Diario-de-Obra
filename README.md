@@ -19,14 +19,15 @@ O aplicativo substitui o preenchimento manual em pranchetas de papel, permitindo
   - **Materiais e Insumos Químicos**: Rastreabilidade com quantidade, unidade, marca, descrição, data de fabricação, validade e número de lote.
   - **Parecer e Liberação da Obra**: Seleção do parecer da fiscalização (*Aprovado*, *Aprovado com Retrabalho*, *Reprovado*).
 
-- **Assinatura Digital do Encarregado por Foto**:
-  - **Upload de Foto da Assinatura**: Carregamento da assinatura física do encarregado/fiscal direto da galeria usando o Android Photo Picker seguro (`ActivityResultContracts.PickVisualMedia`, sem necessidade de permissões perigosas de armazenamento).
-  - **Assinatura Padrão Salva**: Opção para salvar a foto da assinatura como padrão nas configurações da empresa, sendo preenchida automaticamente em todos os novos RDOs emitidos.
-  - **Ajuste Proporcional no PDF**: O motor de geração calcula a escala preservando a proporção de aspecto (sem distorção ou achatamento) e posiciona a assinatura perfeitamente sobre a linha de responsabilidade técnica.
+- **Centralização dos Dados da Empresa & Assinatura Oficial**:
+  - **Nova Tela Dedicada de Dados da Empresa**: Acessível pelo ícone de configurações no topo da tela inicial (`CompanySettingsScreen.kt`), substituindo o modal antigo por uma tela ampla e estruturada.
+  - **Campos Oficiais**: Nome da Empresa / Razão Social, Ramo / Subtítulo (impresso no cabeçalho de todas as folhas do PDF) e Nome do Encarregado / Responsável.
+  - **Assinatura Única Oficial via Foto**: Upload do arquivo da assinatura do encarregado através do Photo Picker seguro. A assinatura cadastrada torna-se a assinatura única oficial da empresa.
+  - **Inserção e Bloqueio Automático nos RDOs**: Ao criar qualquer novo RDO, o formulário já carrega a assinatura e o nome do encarregado de forma fixa e bloqueada, garantindo conformidade e autenticidade técnica tanto na tela quanto no rodapé do PDF emitido.
 
 - **Geração de PDF de Alta Fidelidade (Padrão A4 Oficial)**:
   - Diagramação vetorial nativa via `android.graphics.pdf.PdfDocument`.
-  - Cabeçalho personalizado com logotipo e razão social da empresa executora.
+  - Cabeçalho personalizado com logotipo, razão social e subtítulo dinâmico da empresa executora.
   - **Capacidade Expandida para 12 Itens por Folha**: A tabela de produção comporta até 12 itens por folha A4 com 12 linhas padronizadas, reduzindo o número de páginas e mantendo a grade geométrica limpa mesmo com preenchimento parcial.
   - **Paginação Multi-Folhas Estruturada**: Quando a produção ultrapassa 12 itens, páginas subsequentes são geradas mantendo todo o conteúdo institucional e ambiental da Folha 1 (cabeçalho, fechamento, pavimento, condições de aplicação, recursos, materiais e rodapé), alternando exclusivamente os itens daquela folha.
   - **Numeração e Totais por Folha**: Indicador `(FOLHA X DE Y)` no cabeçalho superior e na barra de produção, acompanhado de `SUBTOTAL PÁG: X.XX M²` e `TOTAL GERAL: X.XX M²` consolidado.
@@ -72,11 +73,11 @@ app/src/main/java/com/example/
 │   └── RdoShareHelper.kt                # Integração com FileProvider e Intent para WhatsApp
 ├── ui/
 │   ├── components/
-│   │   ├── CompanySettingsDialog.kt     # Diálogo de configuração da empresa e assinatura padrão
 │   │   ├── PdfExportDialog.kt           # Diálogo com ações de envio WhatsApp e visualização
-│   │   └── SignaturePhotoPicker.kt      # Seletor e gerenciador de foto de assinatura via Photo Picker
+│   │   └── SignaturePhotoPicker.kt      # Utilitário e seletor de foto de assinatura via Photo Picker
 │   ├── screens/
-│   │   ├── RdoFormScreen.kt             # Formulário em 5 abas com validação e DatePickerDialog
+│   │   ├── CompanySettingsScreen.kt     # Tela dedicada de dados da empresa e assinatura oficial
+│   │   ├── RdoFormScreen.kt             # Formulário em 5 abas com assinatura bloqueada e validações
 │   │   └── RdoListScreen.kt             # Painel de histórico com métricas, busca e cartões
 │   ├── theme/
 │   │   ├── Color.kt                     # Paleta de cores temática de engenharia e trânsito

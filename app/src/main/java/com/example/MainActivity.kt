@@ -12,8 +12,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import com.example.data.model.RdoWithDetails
 import com.example.pdf.RdoPdfGenerator
-import com.example.ui.components.CompanySettingsDialog
 import com.example.ui.components.PdfExportDialog
+import com.example.ui.screens.CompanySettingsScreen
 import com.example.ui.screens.RdoFormScreen
 import com.example.ui.screens.RdoListScreen
 import com.example.ui.theme.MyApplicationTheme
@@ -23,6 +23,7 @@ import java.io.File
 sealed interface Screen {
     object List : Screen
     object Form : Screen
+    object CompanySettings : Screen
 }
 
 class MainActivity : ComponentActivity() {
@@ -37,7 +38,6 @@ class MainActivity : ComponentActivity() {
                 Surface(modifier = Modifier.fillMaxSize()) {
                     var currentScreen by remember { mutableStateOf<Screen>(Screen.List) }
                     var pdfDialogTarget by remember { mutableStateOf<Pair<File, String>?>(null) }
-                    var showSettingsDialog by remember { mutableStateOf(false) }
 
                     val rdoList by viewModel.rdoList.collectAsState()
                     val companySettings by viewModel.companySettings.collectAsState()
@@ -74,7 +74,7 @@ class MainActivity : ComponentActivity() {
                                         viewModel.deleteRdo(rdo)
                                     },
                                     onOpenSettingsClick = {
-                                        showSettingsDialog = true
+                                        currentScreen = Screen.CompanySettings
                                     }
                                 )
                             }
@@ -87,6 +87,12 @@ class MainActivity : ComponentActivity() {
                                     }
                                 )
                             }
+                            Screen.CompanySettings -> {
+                                CompanySettingsScreen(
+                                    viewModel = viewModel,
+                                    onBack = { currentScreen = Screen.List }
+                                )
+                            }
                         }
 
                         // PDF Export & WhatsApp Dialog
@@ -95,17 +101,6 @@ class MainActivity : ComponentActivity() {
                                 pdfFile = file,
                                 obraNome = obraNome,
                                 onDismiss = { pdfDialogTarget = null }
-                            )
-                        }
-
-                        // Company Settings Dialog
-                        if (showSettingsDialog) {
-                            CompanySettingsDialog(
-                                currentSettings = companySettings,
-                                onDismiss = { showSettingsDialog = false },
-                                onSave = { updated ->
-                                    viewModel.saveCompanySettings(updated)
-                                }
                             )
                         }
                     }

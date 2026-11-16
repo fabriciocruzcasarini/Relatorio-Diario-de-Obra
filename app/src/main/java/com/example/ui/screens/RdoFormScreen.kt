@@ -1,6 +1,8 @@
 package com.example.ui.screens
 
+import android.graphics.BitmapFactory
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -18,12 +20,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.example.data.model.*
-import com.example.ui.components.SignaturePhotoPicker
 import com.example.ui.viewmodel.RdoViewModel
 import com.example.util.FormatUtils
 import java.io.File
@@ -286,11 +289,8 @@ fun RdoFormScreen(
                     4 -> TabLiberacaoAssinatura(
                         report = report,
                         defaultSignaturePath = companySettings.defaultAssinaturaPath,
+                        defaultManagerName = companySettings.defaultResponsavelNome,
                         onUpdate = viewModel::updateReport,
-                        onSignatureChanged = viewModel::setSignaturePath,
-                        onSetAsDefault = { path ->
-                            viewModel.setDefaultSignature(path, report.responsavelNome)
-                        },
                         onGeneratePdf = {
                             validateAndProceed {
                                 viewModel.generatePdf { file ->
@@ -1191,12 +1191,27 @@ private fun TabRecursosMateriais(
 private fun TabLiberacaoAssinatura(
     report: RdoReport,
     defaultSignaturePath: String?,
+    defaultManagerName: String,
     onUpdate: ((RdoReport) -> RdoReport) -> Unit,
-    onSignatureChanged: (String?) -> Unit,
-    onSetAsDefault: (String) -> Unit,
     onGeneratePdf: () -> Unit,
     isGenerating: Boolean
 ) {
+    // Synchronize signature and manager name if newly opened report was blank
+    LaunchedEffect(defaultSignaturePath, defaultManagerName) {
+        if (report.assinaturaBitmapPath.isNullOrBlank() && !defaultSignaturePath.isNullOrBlank()) {
+            onUpdate { it.copy(assinaturaBitmapPath = defaultSignaturePath) }
+        }
+        if (report.responsavelNome.isBlank() && defaultManagerName.isNotBlank()) {
+            onUpdate { it.copy(responsavelNome = defaultManagerName) }
+        }
+    }
+
+    val signaturePathToUse = report.assinaturaBitmapPath?.takeIf { it.isNotBlank() } ?: defaultSignaturePath
+    val sigFile = signaturePathToUse?.let { File(it) }?.takeIf { it.exists() }
+    val sigBitmap = remember(signaturePathToUse) {
+        sigFile?.let { BitmapFactory.decodeFile(it.absolutePath) }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -1242,19 +1257,101 @@ private fun TabLiberacaoAssinatura(
             OutlinedTextField(
                 value = report.responsavelNome,
                 onValueChange = { v -> onUpdate { it.copy(responsavelNome = v) } },
-                label = { Text("Nome do Responsável / Fiscal Assinante") },
+                label = { Text("Nome do Responsável / Encarregado") },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth().testTag("input_responsavel_nome")
             )
         }
 
-        SectionCard(title = "Assinatura do Encarregado / Fiscal") {
-            SignaturePhotoPicker(
-                currentSignaturePath = report.assinaturaBitmapPath,
-                defaultSignaturePath = defaultSignaturePath,
-                onSignatureChanged = onSignatureChanged,
-                onSetAsDefault = onSetAsDefault
-            )
+        SectionCard(title = "Assinatura do Encarregado (Cadastrada)") {
+            if (sigBitmap != null) {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(130.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(Color.White)
+                            .border(1.dp, Color(0xFFCBD5E1), RoundedCornerShape(8.dp))
+                            .padding(8.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Image(
+                            bitmap = sigBitmap.asImageBitmap(),
+                            contentDescription = "Assinatura do Encarregado",
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Fit
+                        )
+                    }
+
+                    Surface(
+                        color = Color(0xFFF1F5F9),
+                        shape = RoundedCornerShape(8.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(10.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Icon(
+                                Icons.Default.Lock,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Column {
+                                Text(
+                                    text = "Assinatura Fixa e Bloqueada",
+                                    style = MaterialTheme.typography.labelMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                                Text(
+                                    text = "A assinatura é padronizada nos Dados da Empresa e inserida automaticamente no PDF.",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                    }
+                }
+            } else {
+                Surface(
+                    color = Color(0xFFFEF3C7),
+                    shape = RoundedCornerShape(8.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(
+                        modifier = Modifier.padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        Icon(
+                            Icons.Default.Warning,
+                            contentDescription = null,
+                            tint = Color(0xFFB45309),
+                            modifier = Modifier.size(22.dp)
+                        )
+                        Column {
+                            Text(
+                                text = "Nenhuma assinatura cadastrada",
+                                style = MaterialTheme.typography.labelMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF92400E)
+                            )
+                            Text(
+                                text = "Cadastre a foto da assinatura na tela 'Dados da Empresa' (ícone de engrenagem na tela inicial) para que ela apareça aqui e no PDF.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = Color(0xFF78350F)
+                            )
+                        }
+                    }
+                }
+            }
         }
 
         Button(

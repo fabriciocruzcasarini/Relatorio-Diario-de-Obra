@@ -110,7 +110,8 @@ object RdoPdfGenerator {
                 textSize = 5.5f
                 isAntiAlias = true
             }
-            canvas.drawText("Sinalização Viária", MARGIN_LEFT + 6f, currentY + 24f, logoSub)
+            val subtitleText = settings?.subtitulo?.takeIf { it.isNotBlank() } ?: "Sinalização Viária"
+            canvas.drawText(subtitleText, MARGIN_LEFT + 6f, currentY + 24f, logoSub)
 
             val titlePaint = Paint().apply {
                 color = Color.BLACK
@@ -596,8 +597,11 @@ object RdoPdfGenerator {
             val sigAreaY = currentY + appRowH
             val sigAreaH = footerH - appRowH
 
-            if (!report.assinaturaBitmapPath.isNullOrBlank()) {
-                val sigFile = File(report.assinaturaBitmapPath)
+            val sigPathToUse = report.assinaturaBitmapPath?.takeIf { it.isNotBlank() }
+                ?: settings?.defaultAssinaturaPath?.takeIf { it.isNotBlank() }
+
+            if (!sigPathToUse.isNullOrBlank()) {
+                val sigFile = File(sigPathToUse)
                 if (sigFile.exists()) {
                     val bitmap = BitmapFactory.decodeFile(sigFile.absolutePath)
                     if (bitmap != null && bitmap.width > 0 && bitmap.height > 0) {
@@ -619,8 +623,9 @@ object RdoPdfGenerator {
             val sigLineY = sigAreaY + sigAreaH - 18f
             canvas.drawLine(rightX + 16f, sigLineY, rightX + 180f, sigLineY, linePaint)
             canvas.drawText("ASS. RESPONSÁVEL", rightX + 55f, sigLineY + 10f, textBold)
-            if (report.responsavelNome.isNotBlank()) {
-                canvas.drawText(report.responsavelNome, rightX + 55f, sigLineY - 4f, textSmall)
+            val respNameToUse = report.responsavelNome.ifBlank { settings?.defaultResponsavelNome.orEmpty() }
+            if (respNameToUse.isNotBlank()) {
+                canvas.drawText(respNameToUse, rightX + 55f, sigLineY - 4f, textSmall)
             }
 
             val dateX = rightX + 195f
