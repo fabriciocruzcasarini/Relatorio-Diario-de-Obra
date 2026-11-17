@@ -10,6 +10,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -171,6 +172,31 @@ class ExampleRobolectricTest {
         assertTrue(viewModel.resourceItems.value.isEmpty())
         assertTrue(viewModel.materialItems.value.isEmpty())
         assertTrue(viewModel.rdoList.value.isEmpty())
+    }
+
+    @Test
+    fun `verify time mask formatting and 24h range validation`() {
+        assertTrue(FormatUtils.isValidTimeDigits(""))
+        assertTrue(FormatUtils.isValidTimeDigits("0"))
+        assertTrue(FormatUtils.isValidTimeDigits("07"))
+        assertTrue(FormatUtils.isValidTimeDigits("073"))
+        assertTrue(FormatUtils.isValidTimeDigits("0730"))
+        assertTrue(FormatUtils.isValidTimeDigits("2359"))
+
+        assertFalse(FormatUtils.isValidTimeDigits("3"))
+        assertFalse(FormatUtils.isValidTimeDigits("24"))
+        assertFalse(FormatUtils.isValidTimeDigits("2400"))
+        assertFalse(FormatUtils.isValidTimeDigits("196"))
+        assertFalse(FormatUtils.isValidTimeDigits("1965"))
+        assertFalse(FormatUtils.isValidTimeDigits("07301"))
+        assertFalse(FormatUtils.isValidTimeDigits("07a0"))
+
+        assertEquals("", FormatUtils.formatTimeDigitsToHhMm(""))
+        assertEquals("0", FormatUtils.formatTimeDigitsToHhMm("0"))
+        assertEquals("07", FormatUtils.formatTimeDigitsToHhMm("07"))
+        assertEquals("07:3", FormatUtils.formatTimeDigitsToHhMm("073"))
+        assertEquals("07:30", FormatUtils.formatTimeDigitsToHhMm("0730"))
+        assertEquals("23:59", FormatUtils.formatTimeDigitsToHhMm("2359"))
     }
 }
 

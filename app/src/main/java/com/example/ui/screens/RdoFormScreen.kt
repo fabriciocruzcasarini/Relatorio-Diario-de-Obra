@@ -23,8 +23,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.OffsetMapping
+import androidx.compose.ui.text.input.TransformedText
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import com.example.data.model.*
 import com.example.ui.viewmodel.RdoViewModel
@@ -354,7 +358,6 @@ private fun TabIdentificacao(
                 value = report.obra,
                 onValueChange = { v -> onUpdate { it.copy(obra = v) } },
                 label = { Text("Nome da Obra / Rodovia *") },
-                placeholder = { Text("Ex: SP-330 Rodovia Anhanguera") },
                 singleLine = true,
                 isError = hasAttemptedSubmit && report.obra.isBlank(),
                 supportingText = if (hasAttemptedSubmit && report.obra.isBlank()) {
@@ -366,7 +369,6 @@ private fun TabIdentificacao(
                 value = report.cliente,
                 onValueChange = { v -> onUpdate { it.copy(cliente = v) } },
                 label = { Text("Cliente / Concessionária *") },
-                placeholder = { Text("Ex: ARTESP / CCR AutoBAn") },
                 singleLine = true,
                 isError = hasAttemptedSubmit && report.cliente.isBlank(),
                 supportingText = if (hasAttemptedSubmit && report.cliente.isBlank()) {
@@ -393,7 +395,6 @@ private fun TabIdentificacao(
                     value = report.veiculoKm,
                     onValueChange = { v -> onUpdate { it.copy(veiculoKm = v) } },
                     label = { Text("Veículo KM") },
-                    placeholder = { Text("Ex: 142.500") },
                     singleLine = true,
                     modifier = Modifier.weight(0.8f).testTag("input_veiculo_km")
                 )
@@ -444,20 +445,16 @@ private fun TabIdentificacao(
             }
 
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                OutlinedTextField(
+                TimeMaskedTextField(
                     value = report.horaSaida,
                     onValueChange = { v -> onUpdate { it.copy(horaSaida = v) } },
-                    label = { Text("Horário Saída") },
-                    placeholder = { Text("07:30") },
-                    singleLine = true,
+                    label = "Horário Saída",
                     modifier = Modifier.weight(1f).testTag("input_hora_saida")
                 )
-                OutlinedTextField(
+                TimeMaskedTextField(
                     value = report.horaChegada,
                     onValueChange = { v -> onUpdate { it.copy(horaChegada = v) } },
-                    label = { Text("Horário Chegada") },
-                    placeholder = { Text("17:45") },
-                    singleLine = true,
+                    label = "Horário Chegada",
                     modifier = Modifier.weight(1f).testTag("input_hora_chegada")
                 )
             }
@@ -468,7 +465,6 @@ private fun TabIdentificacao(
                 value = report.fechamentoLocal,
                 onValueChange = { v -> onUpdate { it.copy(fechamentoLocal = v) } },
                 label = { Text("Local de Execução") },
-                placeholder = { Text("Ex: KM 102 ao 106 - Pista Norte") },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth().testTag("input_fechamento_local")
             )
@@ -480,11 +476,10 @@ private fun TabIdentificacao(
                     singleLine = true,
                     modifier = Modifier.weight(1.2f).testTag("input_fechamento_contato")
                 )
-                OutlinedTextField(
+                TimeMaskedTextField(
                     value = report.fechamentoHorario,
                     onValueChange = { v -> onUpdate { it.copy(fechamentoHorario = v) } },
-                    label = { Text("Horário") },
-                    singleLine = true,
+                    label = "Horário",
                     modifier = Modifier.weight(0.8f).testTag("input_fechamento_horario")
                 )
             }
@@ -496,11 +491,10 @@ private fun TabIdentificacao(
                     singleLine = true,
                     modifier = Modifier.weight(1.2f).testTag("input_fechamento_liberado")
                 )
-                OutlinedTextField(
+                TimeMaskedTextField(
                     value = report.fechamentoHorarioFim,
                     onValueChange = { v -> onUpdate { it.copy(fechamentoHorarioFim = v) } },
-                    label = { Text("Horário Fech.") },
-                    singleLine = true,
+                    label = "Horário Fech.",
                     modifier = Modifier.weight(0.8f).testTag("input_fechamento_fim")
                 )
             }
@@ -525,7 +519,6 @@ private fun TabCondicoes(
                 value = report.tipoPavimento,
                 onValueChange = { v -> onUpdate { it.copy(tipoPavimento = v) } },
                 label = { Text("Tipo de Pavimento") },
-                placeholder = { Text("Ex: CBUQ, Concreto, Microrrevestimento") },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth().testTag("input_tipo_pavimento")
             )
@@ -645,7 +638,6 @@ private fun TabCondicoes(
                     value = report.tempAmbiente,
                     onValueChange = { v -> onUpdate { it.copy(tempAmbiente = v) } },
                     label = { Text("Temp. Ambiente") },
-                    placeholder = { Text("Ex: 28°C") },
                     singleLine = true,
                     modifier = Modifier.weight(1f)
                 )
@@ -653,7 +645,6 @@ private fun TabCondicoes(
                     value = report.umidadeRelativa,
                     onValueChange = { v -> onUpdate { it.copy(umidadeRelativa = v) } },
                     label = { Text("Umidade Relativa") },
-                    placeholder = { Text("Ex: 55% (Máx 65%)") },
                     singleLine = true,
                     modifier = Modifier.weight(1f)
                 )
@@ -664,7 +655,6 @@ private fun TabCondicoes(
                     value = report.pontoOrvalho,
                     onValueChange = { v -> onUpdate { it.copy(pontoOrvalho = v) } },
                     label = { Text("Ponto de Orvalho") },
-                    placeholder = { Text("Ex: 17°C") },
                     singleLine = true,
                     modifier = Modifier.weight(1f)
                 )
@@ -672,7 +662,6 @@ private fun TabCondicoes(
                     value = report.tempPavimento,
                     onValueChange = { v -> onUpdate { it.copy(tempPavimento = v) } },
                     label = { Text("Temp. Pavimento") },
-                    placeholder = { Text("Ex: 34°C") },
                     singleLine = true,
                     modifier = Modifier.weight(1f)
                 )
@@ -683,7 +672,6 @@ private fun TabCondicoes(
                     value = report.liberacaoTrafegoMin,
                     onValueChange = { v -> onUpdate { it.copy(liberacaoTrafegoMin = v) } },
                     label = { Text("Lib. Tráfego (min)") },
-                    placeholder = { Text("Ex: 30") },
                     singleLine = true,
                     modifier = Modifier.weight(1f)
                 )
@@ -691,7 +679,6 @@ private fun TabCondicoes(
                     value = report.choveuAposPintura,
                     onValueChange = { v -> onUpdate { it.copy(choveuAposPintura = v) } },
                     label = { Text("Choveu Após?") },
-                    placeholder = { Text("Ex: NÃO") },
                     singleLine = true,
                     modifier = Modifier.weight(1f)
                 )
@@ -962,7 +949,6 @@ private fun ProductionItemCard(
                         onUpdate(item.copy(comprimentoM = comp, totalM2 = m2))
                     },
                     label = { Text("Comprimento (M)") },
-                    placeholder = { Text("ex: 1500,5") },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                     singleLine = true,
                     modifier = Modifier.weight(1.2f)
@@ -979,7 +965,6 @@ private fun ProductionItemCard(
                         onUpdate(item.copy(larguraM = larg, totalM2 = m2))
                     },
                     label = { Text("Largura (M)") },
-                    placeholder = { Text("ex: 0,15") },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                     singleLine = true,
                     modifier = Modifier.weight(1.1f)
@@ -1082,7 +1067,6 @@ private fun TabRecursosMateriais(
                             value = res.equipamentosMedicao,
                             onValueChange = { onUpdateResource(index, res.copy(equipamentosMedicao = it)) },
                             label = { Text("Equipamentos / Instrumentos de Medição") },
-                            placeholder = { Text("Ex: Espessímetro Digital, Higrômetro") },
                             singleLine = true,
                             modifier = Modifier.fillMaxWidth()
                         )
@@ -1128,7 +1112,6 @@ private fun TabRecursosMateriais(
                                 value = mat.unidade,
                                 onValueChange = { onUpdateMaterial(index, mat.copy(unidade = it)) },
                                 label = { Text("Unid.") },
-                                placeholder = { Text("GL/SC/KG") },
                                 singleLine = true,
                                 modifier = Modifier.weight(0.9f)
                             )
@@ -1144,7 +1127,6 @@ private fun TabRecursosMateriais(
                             value = mat.descricao,
                             onValueChange = { onUpdateMaterial(index, mat.copy(descricao = it)) },
                             label = { Text("Descrição do Material") },
-                            placeholder = { Text("Ex: Tinta Acrílica Solvente Branca Tipo I") },
                             singleLine = true,
                             modifier = Modifier.fillMaxWidth()
                         )
@@ -1422,5 +1404,56 @@ private fun MethodCheckbox(
     ) {
         Checkbox(checked = checked, onCheckedChange = { onChecked() })
         Text(title, style = MaterialTheme.typography.bodySmall)
+    }
+}
+
+@Composable
+private fun TimeMaskedTextField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    label: String,
+    modifier: Modifier = Modifier
+) {
+    val digitsValue = remember(value) {
+        value.filter { it.isDigit() }.take(4)
+    }
+    val visualTransformation = remember { TimeVisualTransformation() }
+
+    OutlinedTextField(
+        value = digitsValue,
+        onValueChange = { input ->
+            val newDigits = input.filter { it.isDigit() }
+            if (FormatUtils.isValidTimeDigits(newDigits)) {
+                onValueChange(FormatUtils.formatTimeDigitsToHhMm(newDigits))
+            }
+        },
+        label = { Text(label) },
+        placeholder = { Text("HH:MM") },
+        visualTransformation = visualTransformation,
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+        singleLine = true,
+        modifier = modifier
+    )
+}
+
+private class TimeVisualTransformation : VisualTransformation {
+    override fun filter(text: AnnotatedString): TransformedText {
+        val raw = text.text
+        if (raw.length <= 2) {
+            return TransformedText(AnnotatedString(raw), OffsetMapping.Identity)
+        }
+        val formatted = "${raw.substring(0, 2)}:${raw.substring(2)}"
+        val offsetMapping = object : OffsetMapping {
+            override fun originalToTransformed(offset: Int): Int {
+                val clamped = offset.coerceIn(0, raw.length)
+                return if (clamped <= 2) clamped else clamped + 1
+            }
+
+            override fun transformedToOriginal(offset: Int): Int {
+                val clamped = offset.coerceIn(0, formatted.length)
+                return if (clamped <= 2) clamped else (clamped - 1).coerceIn(0, raw.length)
+            }
+        }
+        return TransformedText(AnnotatedString(formatted), offsetMapping)
     }
 }
