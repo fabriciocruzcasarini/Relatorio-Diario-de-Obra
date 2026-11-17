@@ -4,6 +4,7 @@ import android.app.Application
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import com.example.data.model.*
+import com.example.ui.screens.buildAppReleaseHistory
 import com.example.ui.viewmodel.RdoViewModel
 import com.example.util.FormatUtils
 import java.text.SimpleDateFormat
@@ -197,6 +198,18 @@ class ExampleRobolectricTest {
         assertEquals("07:3", FormatUtils.formatTimeDigitsToHhMm("073"))
         assertEquals("07:30", FormatUtils.formatTimeDigitsToHhMm("0730"))
         assertEquals("23:59", FormatUtils.formatTimeDigitsToHhMm("2359"))
+    }
+
+    @Test
+    fun `verify compiled BuildConfig version and release notes history`() {
+        assertTrue(BuildConfig.VERSION_NAME.isNotBlank())
+        assertTrue(BuildConfig.VERSION_CODE >= 1)
+
+        val notes = buildAppReleaseHistory(BuildConfig.VERSION_NAME)
+        assertTrue(notes.isNotEmpty())
+        assertEquals("v${BuildConfig.VERSION_NAME}", notes.first().version)
+        assertTrue(notes.first().isCurrent)
+        assertTrue(notes.first().highlights.isNotEmpty())
     }
 }
 

@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import com.example.data.model.RdoWithDetails
 import com.example.pdf.RdoPdfGenerator
 import com.example.ui.components.PdfExportDialog
+import com.example.ui.screens.AppUpdatesScreen
 import com.example.ui.screens.CompanySettingsScreen
 import com.example.ui.screens.RdoFormScreen
 import com.example.ui.screens.RdoListScreen
@@ -24,6 +25,7 @@ sealed interface Screen {
     object List : Screen
     object Form : Screen
     object CompanySettings : Screen
+    object VersionUpdates : Screen
 }
 
 class MainActivity : ComponentActivity() {
@@ -90,7 +92,13 @@ class MainActivity : ComponentActivity() {
                             Screen.CompanySettings -> {
                                 CompanySettingsScreen(
                                     viewModel = viewModel,
-                                    onBack = { currentScreen = Screen.List }
+                                    onBack = { currentScreen = Screen.List },
+                                    onOpenVersionUpdates = { currentScreen = Screen.VersionUpdates }
+                                )
+                            }
+                            Screen.VersionUpdates -> {
+                                AppUpdatesScreen(
+                                    onBack = { currentScreen = Screen.CompanySettings }
                                 )
                             }
                         }
