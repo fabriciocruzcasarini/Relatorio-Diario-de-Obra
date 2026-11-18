@@ -4,7 +4,6 @@ import android.app.Application
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import com.example.data.model.*
-import com.example.pdf.RdoPdfGenerator
 import com.example.ui.screens.buildAppReleaseHistory
 import com.example.ui.viewmodel.RdoViewModel
 import com.example.util.FormatUtils
@@ -256,37 +255,6 @@ class ExampleRobolectricTest {
         // Subsampling factor for 4000x3000 photo targeting 400x160
         val sampleSize = ImageUtils.calculateInSampleSize(4000, 3000, 400, 160)
         assertTrue(sampleSize >= 8)
-    }
-
-    @Test
-    fun `verify dynamic resource rows and footer height calculation`() {
-        // 0 to 3 items keep 3 rows of 24pt and 122pt footer
-        val layout0 = RdoPdfGenerator.calculateVerticalLayout(0)
-        assertEquals(3, layout0.recRowsCount)
-        assertEquals(24f, layout0.recRowH, 0.01f)
-        assertEquals(20f, layout0.prodRowH, 0.01f)
-        assertEquals(122f, layout0.expectedFooterH, 0.01f)
-
-        val layout3 = RdoPdfGenerator.calculateVerticalLayout(3)
-        assertEquals(3, layout3.recRowsCount)
-        assertEquals(122f, layout3.expectedFooterH, 0.01f)
-
-        // 4 items expand to 4 rows and shrink footer from 122pt to 98pt
-        val layout4 = RdoPdfGenerator.calculateVerticalLayout(4)
-        assertEquals(4, layout4.recRowsCount)
-        assertEquals(24f, layout4.recRowH, 0.01f)
-        assertEquals(98f, layout4.expectedFooterH, 0.01f)
-
-        // 6 and 10 items render all rows while preserving safe footer height >= 82pt
-        val layout6 = RdoPdfGenerator.calculateVerticalLayout(6)
-        assertEquals(6, layout6.recRowsCount)
-        assertTrue(layout6.expectedFooterH >= 81.9f)
-        assertTrue(layout6.recRowH >= 12f)
-
-        val layout10 = RdoPdfGenerator.calculateVerticalLayout(10)
-        assertEquals(10, layout10.recRowsCount)
-        assertTrue(layout10.expectedFooterH >= 81.9f)
-        assertTrue(layout10.recRowH >= 12f)
     }
 }
 

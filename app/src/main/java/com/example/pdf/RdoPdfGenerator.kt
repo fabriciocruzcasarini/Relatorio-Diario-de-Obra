@@ -18,47 +18,6 @@ object RdoPdfGenerator {
     private const val MARGIN_RIGHT = 577f
     private const val CONTENT_WIDTH = MARGIN_RIGHT - MARGIN_LEFT
     private const val ITEMS_PER_PAGE = 12
-    private const val MIN_RESOURCE_ROWS = 3
-    private const val MIN_FOOTER_HEIGHT = 82f
-    private const val TOTAL_VARIABLE_HEIGHT = 434f // 806f usable page - 372f fixed headers/materials/obs
-
-    data class PdfVerticalLayout(
-        val prodRowH: Float,
-        val recRowsCount: Int,
-        val recRowH: Float,
-        val expectedFooterH: Float
-    )
-
-    internal fun calculateVerticalLayout(resourceItemsCount: Int): PdfVerticalLayout {
-        val availableForProdAndRec = TOTAL_VARIABLE_HEIGHT - MIN_FOOTER_HEIGHT
-        val recRowsCount = maxOf(MIN_RESOURCE_ROWS, resourceItemsCount)
-
-        var prodRowH = 20f
-        var recRowH = 24f
-
-        val maxRecWithDefaultProd = availableForProdAndRec - (ITEMS_PER_PAGE * prodRowH)
-        if (recRowsCount * recRowH > maxRecWithDefaultProd) {
-            val candidateRecH = maxRecWithDefaultProd / recRowsCount
-            if (candidateRecH >= 12f) {
-                recRowH = candidateRecH
-            } else {
-                val minProdRowH = 13f
-                val maxRecWithMinProd = availableForProdAndRec - (ITEMS_PER_PAGE * minProdRowH)
-                val targetRecH = (maxRecWithMinProd / recRowsCount).coerceAtLeast(8f)
-                val neededForRec = recRowsCount * targetRecH
-                prodRowH = ((availableForProdAndRec - neededForRec) / ITEMS_PER_PAGE).coerceIn(minProdRowH, 20f)
-                recRowH = ((availableForProdAndRec - ITEMS_PER_PAGE * prodRowH) / recRowsCount).coerceAtLeast(8f)
-            }
-        }
-
-        val expectedFooterH = TOTAL_VARIABLE_HEIGHT - (ITEMS_PER_PAGE * prodRowH) - (recRowsCount * recRowH)
-        return PdfVerticalLayout(
-            prodRowH = prodRowH,
-            recRowsCount = recRowsCount,
-            recRowH = recRowH,
-            expectedFooterH = expectedFooterH
-        )
-    }
 
     fun generatePdf(
         context: Context,
@@ -122,7 +81,6 @@ object RdoPdfGenerator {
         val grandTotalM2 = allProdItems.sumOf { it.totalM2 }
 
         val totalPages = if (allProdItems.isEmpty()) 1 else (allProdItems.size + ITEMS_PER_PAGE - 1) / ITEMS_PER_PAGE
-        val verticalLayout = calculateVerticalLayout(reportWithDetails.resourceItems.size)
 
         val sigPathToUse = report.assinaturaBitmapPath?.takeIf { it.isNotBlank() }
             ?: settings?.defaultAssinaturaPath?.takeIf { it.isNotBlank() }
@@ -444,7 +402,7 @@ object RdoPdfGenerator {
             val pageProdItems = if (startIdx < allProdItems.size) allProdItems.subList(startIdx, endIdx) else emptyList()
             val pageSubtotalM2 = pageProdItems.sumOf { it.totalM2 }
 
-            val prodRowH = verticalLayout.prodRowH
+            val prodRowH = 20f
             val prodTextOffsetY = prodRowH / 2f + 2.5f
             for (r in 0 until ITEMS_PER_PAGE) {
                 val item = pageProdItems.getOrNull(r)
@@ -528,14 +486,9 @@ object RdoPdfGenerator {
             }
             currentY += recHeaderH
 
-            val recRowsCount = verticalLayout.recRowsCount
-            val recRowH = verticalLayout.recRowH
-            val recCellPaint = if (recRowH < 13f) {
-                Paint(textSmall).apply { textSize = (recRowH * 0.55f).coerceIn(4.5f, 6f) }
-            } else {
-                textSmall
-            }
-            val recTextOffsetY = recRowH / 2f + recCellPaint.textSize * 0.38f
+            val recRowsCount = 3
+            val recRowH = 24f
+            val recTextOffsetY = recRowH / 2f + 2.5f
             val resourceItems = reportWithDetails.resourceItems
             for (r in 0 until recRowsCount) {
                 val item = resourceItems.getOrNull(r)
@@ -550,7 +503,7 @@ object RdoPdfGenerator {
                             3 -> item.equipamentosMedicao
                             else -> ""
                         }
-                        canvas.drawText(text, rx + 4f, currentY + recTextOffsetY, recCellPaint)
+                        canvas.drawText(text, rx + 4f, currentY + recTextOffsetY, textSmall)
                     }
                     rx += recColW[i]
                     if (i < recColW.size - 1) {
