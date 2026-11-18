@@ -214,21 +214,21 @@ class ExampleRobolectricTest {
     }
 
     @Test
-    fun `verify fixed 120x40 pt signature box and 400x160 px downscale math`() {
-        assertEquals(120f, ImageUtils.SIGNATURE_PDF_BOX_WIDTH, 0.001f)
-        assertEquals(40f, ImageUtils.SIGNATURE_PDF_BOX_HEIGHT, 0.001f)
+    fun `verify fixed 85x28 pt signature box and 400x160 px downscale math`() {
+        assertEquals(85f, ImageUtils.SIGNATURE_PDF_BOX_WIDTH, 0.001f)
+        assertEquals(28f, ImageUtils.SIGNATURE_PDF_BOX_HEIGHT, 0.001f)
         assertEquals(400, ImageUtils.SIGNATURE_MAX_PIXEL_WIDTH)
         assertEquals(160, ImageUtils.SIGNATURE_MAX_PIXEL_HEIGHT)
 
-        // Tall square image (1000x1000) into 120x40 pt box -> constrained to 40x40 pt (not stretched)
+        // Tall square image (1000x1000) into 85x28 pt box -> constrained to 28x28 pt (not stretched)
         val (tallW, tallH) = ImageUtils.calculateFitSize(
             srcWidth = 1000f,
             srcHeight = 1000f,
             maxWidth = ImageUtils.SIGNATURE_PDF_BOX_WIDTH,
             maxHeight = ImageUtils.SIGNATURE_PDF_BOX_HEIGHT
         )
-        assertEquals(40f, tallW, 0.001f)
-        assertEquals(40f, tallH, 0.001f)
+        assertEquals(28f, tallW, 0.001f)
+        assertEquals(28f, tallH, 0.001f)
 
         // Wide image (4000x1000) into 400x160 px -> 400x100 px
         val (pxW, pxH) = ImageUtils.calculateFitSize(

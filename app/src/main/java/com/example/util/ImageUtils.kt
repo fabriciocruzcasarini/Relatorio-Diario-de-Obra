@@ -12,8 +12,8 @@ object ImageUtils {
 
     const val SIGNATURE_MAX_PIXEL_WIDTH = 400
     const val SIGNATURE_MAX_PIXEL_HEIGHT = 160
-    const val SIGNATURE_PDF_BOX_WIDTH = 120f
-    const val SIGNATURE_PDF_BOX_HEIGHT = 40f
+    const val SIGNATURE_PDF_BOX_WIDTH = 85f
+    const val SIGNATURE_PDF_BOX_HEIGHT = 28f
 
     /**
      * Calculates proportional dimensions that fit inside [maxWidth] x [maxHeight]

@@ -402,7 +402,8 @@ object RdoPdfGenerator {
             val pageProdItems = if (startIdx < allProdItems.size) allProdItems.subList(startIdx, endIdx) else emptyList()
             val pageSubtotalM2 = pageProdItems.sumOf { it.totalM2 }
 
-            val prodRowH = 13f
+            val prodRowH = 20f
+            val prodTextOffsetY = prodRowH / 2f + 2.5f
             for (r in 0 until ITEMS_PER_PAGE) {
                 val item = pageProdItems.getOrNull(r)
                 canvas.drawLine(MARGIN_LEFT, currentY + prodRowH, MARGIN_RIGHT, currentY + prodRowH, thinLinePaint)
@@ -424,9 +425,9 @@ object RdoPdfGenerator {
                             else -> ""
                         }
                         if (i == 0 || i == 1) {
-                            canvas.drawText(text, rowX + 2f, currentY + 9f, textSmall)
+                            canvas.drawText(text, rowX + 2f, currentY + prodTextOffsetY, textSmall)
                         } else {
-                            canvas.drawText(text, rowX + colW[i] / 2f, currentY + 9f, colCenterSmall)
+                            canvas.drawText(text, rowX + colW[i] / 2f, currentY + prodTextOffsetY, colCenterSmall)
                         }
                     }
                     rowX += colW[i]
@@ -486,7 +487,8 @@ object RdoPdfGenerator {
             currentY += recHeaderH
 
             val recRowsCount = 3
-            val recRowH = 12f
+            val recRowH = 24f
+            val recTextOffsetY = recRowH / 2f + 2.5f
             val resourceItems = reportWithDetails.resourceItems
             for (r in 0 until recRowsCount) {
                 val item = resourceItems.getOrNull(r)
@@ -501,7 +503,7 @@ object RdoPdfGenerator {
                             3 -> item.equipamentosMedicao
                             else -> ""
                         }
-                        canvas.drawText(text, rx + 4f, currentY + 9f, textSmall)
+                        canvas.drawText(text, rx + 4f, currentY + recTextOffsetY, textSmall)
                     }
                     rx += recColW[i]
                     if (i < recColW.size - 1) {
@@ -604,7 +606,7 @@ object RdoPdfGenerator {
 
             val sigAreaY = currentY + appRowH
             val sigAreaH = footerH - appRowH
-            val sigLineY = sigAreaY + sigAreaH - 18f
+            val sigLineY = sigAreaY + sigAreaH - 16f
 
             if (signatureBitmap != null && signatureBitmap.width > 0 && signatureBitmap.height > 0) {
                 val maxW = ImageUtils.SIGNATURE_PDF_BOX_WIDTH
@@ -617,7 +619,7 @@ object RdoPdfGenerator {
                 )
                 val sigCenterX = rightX + 98f
                 val boxLeft = sigCenterX - maxW / 2f
-                val boxBottom = (sigLineY - 14f).coerceAtLeast(sigAreaY + 12f)
+                val boxBottom = (sigLineY - 12f).coerceAtLeast(sigAreaY + 10f)
                 val boxTop = (boxBottom - maxH).coerceAtLeast(sigAreaY + 2f)
                 val startX = boxLeft + (maxW - drawW) / 2f
                 val startY = boxTop + (maxH - drawH) / 2f

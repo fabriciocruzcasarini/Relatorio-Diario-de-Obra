@@ -41,8 +41,9 @@ fun buildAppReleaseHistory(compiledVersionName: String): List<AppReleaseNote> = 
             "Formulário de novo RDO iniciado limpo (sem dados fictícios ou textos de exemplo nos campos), mantendo apenas a data atual e os dados da empresa.",
             "Tela dedicada de Dados da Empresa com Nome, Ramo/Subtítulo, Encarregado e foto única de assinatura oficial bloqueada nos RDOs.",
             "Exportação de PDF A4 expandida para 12 itens de produção por folha com paginação completa e subtotais por página.",
-            "Exibição automática da versão compilada do aplicativo (BuildConfig.VERSION_NAME)."
-            "Alteração do tamanho da imagem de assinatura do Encarregado"
+            "Exibição automática da versão compilada do aplicativo (BuildConfig.VERSION_NAME).",
+            "Alteração do tamanho da imagem de assinatura do Encarregado",
+            "Alteração no tamanho do Rodaé"
         )
     ),
     AppReleaseNote(
@@ -54,8 +55,9 @@ fun buildAppReleaseHistory(compiledVersionName: String): List<AppReleaseNote> = 
             "Formulário completo em 5 abas cobrindo identificação, condições climáticas e do pavimento, produção, recursos e liberação.",
             "Cálculo automático de área demarcada (M²) com suporte a separador decimal brasileiro (vírgula ou ponto).",
             "Armazenamento local offline em banco de dados Room (SQLite) com busca, edição e duplicação de relatórios.",
-            "Compartilhamento imediato do PDF oficial pelo WhatsApp via FileProvider seguro."
-            "Redução da imagem de assinatura paa 400 x 160 px em formato PNG compacto"
+            "Compartilhamento imediato do PDF oficial pelo WhatsApp via FileProvider seguro.",
+            "Redução da imagem de assinatura paa 400 x 160 px em formato PNG compacto",
+            "Alteração no tamanho do Rodaé"
         )
     )
 )
