@@ -43,7 +43,8 @@ fun buildAppReleaseHistory(compiledVersionName: String): List<AppReleaseNote> = 
             "Exportação de PDF A4 expandida para 12 itens de produção por folha com paginação completa e subtotais por página.",
             "Exibição automática da versão compilada do aplicativo (BuildConfig.VERSION_NAME).",
             "Alteração do tamanho da imagem de assinatura do Encarregado",
-            "Alteração no tamanho do Rodaé"
+            "Alteração no tamanho do Rodaé",
+            "Atteração na quantidade de Funcionários. na tabela de Recursos"
         )
     ),
     AppReleaseNote(
@@ -57,7 +58,8 @@ fun buildAppReleaseHistory(compiledVersionName: String): List<AppReleaseNote> = 
             "Armazenamento local offline em banco de dados Room (SQLite) com busca, edição e duplicação de relatórios.",
             "Compartilhamento imediato do PDF oficial pelo WhatsApp via FileProvider seguro.",
             "Redução da imagem de assinatura paa 400 x 160 px em formato PNG compacto",
-            "Alteração no tamanho do Rodaé"
+            "Alteração no tamanho do Rodaé",
+            "Atteração na quantidade de Funcionários. na tabela de Recursos"
         )
     )
 )
