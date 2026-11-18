@@ -42,6 +42,7 @@ fun buildAppReleaseHistory(compiledVersionName: String): List<AppReleaseNote> = 
             "Tela dedicada de Dados da Empresa com Nome, Ramo/Subtítulo, Encarregado e foto única de assinatura oficial bloqueada nos RDOs.",
             "Exportação de PDF A4 expandida para 12 itens de produção por folha com paginação completa e subtotais por página.",
             "Exibição automática da versão compilada do aplicativo (BuildConfig.VERSION_NAME)."
+            "Alteração do tamanho da imagem de assinatura do Encarregado"
         )
     ),
     AppReleaseNote(
@@ -54,6 +55,7 @@ fun buildAppReleaseHistory(compiledVersionName: String): List<AppReleaseNote> = 
             "Cálculo automático de área demarcada (M²) com suporte a separador decimal brasileiro (vírgula ou ponto).",
             "Armazenamento local offline em banco de dados Room (SQLite) com busca, edição e duplicação de relatórios.",
             "Compartilhamento imediato do PDF oficial pelo WhatsApp via FileProvider seguro."
+            "Redução da imagem de assinatura paa 400 x 160 px em formato PNG compacto"
         )
     )
 )
