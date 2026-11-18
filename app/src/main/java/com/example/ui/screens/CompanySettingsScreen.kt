@@ -35,6 +35,7 @@ import com.example.BuildConfig
 import com.example.data.model.CompanySettings
 import com.example.ui.components.copyUriToInternalStorage
 import com.example.ui.viewmodel.RdoViewModel
+import com.example.util.ImageUtils
 import java.io.File
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -84,7 +85,7 @@ fun CompanySettingsScreen(
 
     val sigFile = signaturePath?.let { File(it) }?.takeIf { it.exists() }
     val sigBitmap = remember(signaturePath) {
-        sigFile?.let { BitmapFactory.decodeFile(it.absolutePath) }
+        sigFile?.let { ImageUtils.decodeSampledSignatureFromFile(it.absolutePath) }
     }
 
     Scaffold(

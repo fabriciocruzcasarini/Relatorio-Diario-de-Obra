@@ -1,8 +1,10 @@
 package com.example.ui.components
 
 import android.content.Context
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
+import com.example.util.ImageUtils
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -60,7 +62,7 @@ fun SignaturePhotoPicker(
 
     val currentFile = currentSignaturePath?.let { File(it) }?.takeIf { it.exists() }
     val bitmap = remember(currentSignaturePath) {
-        currentFile?.let { BitmapFactory.decodeFile(it.absolutePath) }
+        currentFile?.let { ImageUtils.decodeSampledSignatureFromFile(it.absolutePath) }
     }
 
     Column(
@@ -230,17 +232,23 @@ fun SignaturePhotoPicker(
 
 internal fun copyUriToInternalStorage(context: Context, uri: Uri): String? {
     return try {
+        val sampledBitmap = ImageUtils.decodeSampledSignatureFromUri(
+            context = context,
+            uri = uri,
+            maxWidth = ImageUtils.SIGNATURE_MAX_PIXEL_WIDTH,
+            maxHeight = ImageUtils.SIGNATURE_MAX_PIXEL_HEIGHT
+        ) ?: return null
+
         val sigDir = File(context.filesDir, "signatures")
         if (!sigDir.exists()) sigDir.mkdirs()
 
         val fileName = "sig_photo_${System.currentTimeMillis()}.png"
         val destFile = File(sigDir, fileName)
 
-        context.contentResolver.openInputStream(uri)?.use { input ->
-            FileOutputStream(destFile).use { output ->
-                input.copyTo(output)
-            }
+        FileOutputStream(destFile).use { output ->
+            sampledBitmap.compress(Bitmap.CompressFormat.PNG, 100, output)
         }
+        sampledBitmap.recycle()
         destFile.absolutePath
     } catch (e: Exception) {
         null

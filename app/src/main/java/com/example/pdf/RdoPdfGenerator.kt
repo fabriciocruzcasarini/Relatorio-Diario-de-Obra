@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.*
 import android.graphics.pdf.PdfDocument
 import com.example.data.model.*
+import com.example.util.ImageUtils
 import java.io.File
 import java.io.FileOutputStream
 import java.text.SimpleDateFormat
@@ -80,6 +81,13 @@ object RdoPdfGenerator {
         val grandTotalM2 = allProdItems.sumOf { it.totalM2 }
 
         val totalPages = if (allProdItems.isEmpty()) 1 else (allProdItems.size + ITEMS_PER_PAGE - 1) / ITEMS_PER_PAGE
+
+        val sigPathToUse = report.assinaturaBitmapPath?.takeIf { it.isNotBlank() }
+            ?: settings?.defaultAssinaturaPath?.takeIf { it.isNotBlank() }
+        val signatureBitmap = sigPathToUse
+            ?.let { File(it) }
+            ?.takeIf { it.exists() }
+            ?.let { ImageUtils.decodeSampledSignatureFromFile(it.absolutePath) }
 
         for (pageIdx in 0 until totalPages) {
             val pageNumber = pageIdx + 1
@@ -596,31 +604,27 @@ object RdoPdfGenerator {
 
             val sigAreaY = currentY + appRowH
             val sigAreaH = footerH - appRowH
+            val sigLineY = sigAreaY + sigAreaH - 18f
 
-            val sigPathToUse = report.assinaturaBitmapPath?.takeIf { it.isNotBlank() }
-                ?: settings?.defaultAssinaturaPath?.takeIf { it.isNotBlank() }
-
-            if (!sigPathToUse.isNullOrBlank()) {
-                val sigFile = File(sigPathToUse)
-                if (sigFile.exists()) {
-                    val bitmap = BitmapFactory.decodeFile(sigFile.absolutePath)
-                    if (bitmap != null && bitmap.width > 0 && bitmap.height > 0) {
-                        val maxW = 150f
-                        val maxH = (sigAreaH - 24f).coerceAtLeast(10f)
-                        val bWidth = bitmap.width.toFloat()
-                        val bHeight = bitmap.height.toFloat()
-                        val scale = minOf(maxW / bWidth, maxH / bHeight)
-                        val drawW = bWidth * scale
-                        val drawH = bHeight * scale
-                        val startX = rightX + 20f + (maxW - drawW) / 2f
-                        val startY = sigAreaY + 2f + (maxH - drawH) / 2f
-                        val destRect = RectF(startX, startY, startX + drawW, startY + drawH)
-                        canvas.drawBitmap(bitmap, null, destRect, null)
-                    }
-                }
+            if (signatureBitmap != null && signatureBitmap.width > 0 && signatureBitmap.height > 0) {
+                val maxW = ImageUtils.SIGNATURE_PDF_BOX_WIDTH
+                val maxH = minOf(ImageUtils.SIGNATURE_PDF_BOX_HEIGHT, (sigAreaH - 30f).coerceAtLeast(10f))
+                val (drawW, drawH) = ImageUtils.calculateFitSize(
+                    srcWidth = signatureBitmap.width.toFloat(),
+                    srcHeight = signatureBitmap.height.toFloat(),
+                    maxWidth = maxW,
+                    maxHeight = maxH
+                )
+                val sigCenterX = rightX + 98f
+                val boxLeft = sigCenterX - maxW / 2f
+                val boxBottom = (sigLineY - 14f).coerceAtLeast(sigAreaY + 12f)
+                val boxTop = (boxBottom - maxH).coerceAtLeast(sigAreaY + 2f)
+                val startX = boxLeft + (maxW - drawW) / 2f
+                val startY = boxTop + (maxH - drawH) / 2f
+                val destRect = RectF(startX, startY, startX + drawW, startY + drawH)
+                canvas.drawBitmap(signatureBitmap, null, destRect, null)
             }
 
-            val sigLineY = sigAreaY + sigAreaH - 18f
             canvas.drawLine(rightX + 16f, sigLineY, rightX + 180f, sigLineY, linePaint)
             canvas.drawText("ASS. RESPONSÁVEL", rightX + 55f, sigLineY + 10f, textBold)
             val respNameToUse = report.responsavelNome.ifBlank { settings?.defaultResponsavelNome.orEmpty() }
@@ -646,6 +650,7 @@ object RdoPdfGenerator {
             document.writeTo(out)
         }
         document.close()
+        signatureBitmap?.recycle()
 
         return file
     }

@@ -33,6 +33,7 @@ import androidx.compose.ui.unit.dp
 import com.example.data.model.*
 import com.example.ui.viewmodel.RdoViewModel
 import com.example.util.FormatUtils
+import com.example.util.ImageUtils
 import java.io.File
 import java.util.Locale
 
@@ -1191,7 +1192,7 @@ private fun TabLiberacaoAssinatura(
     val signaturePathToUse = report.assinaturaBitmapPath?.takeIf { it.isNotBlank() } ?: defaultSignaturePath
     val sigFile = signaturePathToUse?.let { File(it) }?.takeIf { it.exists() }
     val sigBitmap = remember(signaturePathToUse) {
-        sigFile?.let { BitmapFactory.decodeFile(it.absolutePath) }
+        sigFile?.let { ImageUtils.decodeSampledSignatureFromFile(it.absolutePath) }
     }
 
     Column(

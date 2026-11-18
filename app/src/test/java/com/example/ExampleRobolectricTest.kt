@@ -7,6 +7,7 @@ import com.example.data.model.*
 import com.example.ui.screens.buildAppReleaseHistory
 import com.example.ui.viewmodel.RdoViewModel
 import com.example.util.FormatUtils
+import com.example.util.ImageUtils
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -210,6 +211,50 @@ class ExampleRobolectricTest {
         assertEquals("v${BuildConfig.VERSION_NAME}", notes.first().version)
         assertTrue(notes.first().isCurrent)
         assertTrue(notes.first().highlights.isNotEmpty())
+    }
+
+    @Test
+    fun `verify fixed 120x40 pt signature box and 400x160 px downscale math`() {
+        assertEquals(120f, ImageUtils.SIGNATURE_PDF_BOX_WIDTH, 0.001f)
+        assertEquals(40f, ImageUtils.SIGNATURE_PDF_BOX_HEIGHT, 0.001f)
+        assertEquals(400, ImageUtils.SIGNATURE_MAX_PIXEL_WIDTH)
+        assertEquals(160, ImageUtils.SIGNATURE_MAX_PIXEL_HEIGHT)
+
+        // Tall square image (1000x1000) into 120x40 pt box -> constrained to 40x40 pt (not stretched)
+        val (tallW, tallH) = ImageUtils.calculateFitSize(
+            srcWidth = 1000f,
+            srcHeight = 1000f,
+            maxWidth = ImageUtils.SIGNATURE_PDF_BOX_WIDTH,
+            maxHeight = ImageUtils.SIGNATURE_PDF_BOX_HEIGHT
+        )
+        assertEquals(40f, tallW, 0.001f)
+        assertEquals(40f, tallH, 0.001f)
+
+        // Wide image (4000x1000) into 400x160 px -> 400x100 px
+        val (pxW, pxH) = ImageUtils.calculateFitSize(
+            srcWidth = 4000f,
+            srcHeight = 1000f,
+            maxWidth = ImageUtils.SIGNATURE_MAX_PIXEL_WIDTH.toFloat(),
+            maxHeight = ImageUtils.SIGNATURE_MAX_PIXEL_HEIGHT.toFloat(),
+            allowUpscale = false
+        )
+        assertEquals(400f, pxW, 0.001f)
+        assertEquals(100f, pxH, 0.001f)
+
+        // Small image (200x80) with allowUpscale=false keeps original size (200x80)
+        val (smallW, smallH) = ImageUtils.calculateFitSize(
+            srcWidth = 200f,
+            srcHeight = 80f,
+            maxWidth = ImageUtils.SIGNATURE_MAX_PIXEL_WIDTH.toFloat(),
+            maxHeight = ImageUtils.SIGNATURE_MAX_PIXEL_HEIGHT.toFloat(),
+            allowUpscale = false
+        )
+        assertEquals(200f, smallW, 0.001f)
+        assertEquals(80f, smallH, 0.001f)
+
+        // Subsampling factor for 4000x3000 photo targeting 400x160
+        val sampleSize = ImageUtils.calculateInSampleSize(4000, 3000, 400, 160)
+        assertTrue(sampleSize >= 8)
     }
 }
 
